@@ -79,6 +79,7 @@ The OS should have an email setup as well as lots of man pages.
 * sudo
 * kill?
 * more
+* passwd
 
 ## Blocks
 
