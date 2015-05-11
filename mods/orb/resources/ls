@@ -1,0 +1,9 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+local dir = orb.fs.find_dir(f, args[1])
+for name,contents in pairs(dir) do
+   if(not name:match("^_")) then
+      print(name)
+   end
+end

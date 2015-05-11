@@ -62,40 +62,44 @@ The OS should have an email setup as well as lots of man pages.
 
 ## OS Executables
 
-* ls
-* cd
-* mkdir
-* cp
-* mv
-* rm
-* smash (bash-like)
-* an editor (hoooo boy this is gonna be fun!)
-* chmod
-* chown
-* man
-* mail
-* ssh
-* scp
-* sudo
-* kill?
-* more
-* passwd
+* [x] ls
+* [ ] cd
+* [ ] cat
+* [ ] mkdir
+* [ ] cp
+* [ ] mv
+* [ ] rm
+* [ ] smash (bash-like)
+* [ ] an editor (hoooo boy this is gonna be fun!)
+* [ ] chmod
+* [ ] chown
+* [ ] man
+* [ ] mail
+* [ ] ssh
+* [ ] scp
+* [ ] sudo
+* [ ] kill?
+* [ ] more
+* [ ] passwd
 
 ## Blocks
 
-* Steel blocks
-* Glass
-* Computers
-* Drives? (or the computer has an inventory)
-* Switches, buttons
-* Wires
-* Doors
-* Corridor arches
-* Light panels
-* Debris
-* Elevators
-* Damaged circuits
-* Power conduit/receptacle
+* [x] Steel blocks
+* [x] Duranium (decorative alternative to steel)
+* [x] Tritanium (decorative alternative to steel)
+* [x] Glass
+* [ ] Computers
+* [ ] Drives? (or the computer has an inventory)
+* [x] Switches (use mesecons)
+* [x] buttons (use mesecons)
+* [x] Wires (use mesecons)
+* [ ] Doors
+* [ ] Corridor arches
+* [x] Light panels
+* [ ] Debris
+* [ ] Elevators
+* [ ] Damaged circuits
+* [ ] Power receptacle
 
 ## New items
 
