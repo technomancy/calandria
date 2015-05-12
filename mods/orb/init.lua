@@ -54,7 +54,7 @@ orb.fs = {
    end,
 
    seed = function(f, users)
-      for _,d in pairs({"/etc", "/usr", "/home", "/tmp", "/bin"}) do
+      for _,d in pairs({"/etc", "/home", "/tmp", "/bin"}) do
          orb.fs.mkdir(f, d)
       end
       orb.fs.find_dir(f, "/tmp")["_permissions"] = 511 -- 777 in decimal
@@ -78,6 +78,7 @@ orb.fs = {
    end,
 
    find_dir = function(f, path)
+      if(path == "/") then return f end
       path = path:gsub("/$", "")
       path_segments = orb.utils.split(path, "/")
       final = table.remove(path_segments, #path_segments)
@@ -111,5 +112,8 @@ orb.shell = {
    end
 }
 
-f1 = orb.fs.seed(orb.fs.empty(), {"phil", "noah", "zach"})
+f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
+orb.fs.find_dir(f1, "/")
 orb.shell.exec(f1, orb.shell.new_env(), "ls /home")
+orb.shell.exec(f1, orb.shell.new_env(), "ls /bin")
+orb.shell.exec(f1, orb.shell.new_env(), "ls /")
