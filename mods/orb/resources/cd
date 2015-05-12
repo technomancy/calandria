@@ -1,0 +1,5 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+-- TODO: normalize arg
+env.CWD = args[1] or env.HOME

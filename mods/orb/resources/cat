@@ -1,0 +1,5 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+local file = orb.fs.find(f, args[1], env)
+print(file)

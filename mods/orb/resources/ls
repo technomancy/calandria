@@ -1,7 +1,10 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-local dir = orb.fs.find_dir(f, args[1])
+local dirname = args[1] or env.CWD
+local dir = orb.fs.find(f, dirname, env)
+if not dir then return end
+
 for name,contents in pairs(dir) do
    if(not name:match("^_")) then
       print(name)

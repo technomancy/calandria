@@ -63,9 +63,10 @@ The OS should have an email setup as well as lots of man pages.
 ## OS Executables
 
 * [x] ls
-* [ ] cd
-* [ ] cat
-* [ ] mkdir
+* [x] cd
+* [x] cat
+* [x] mkdir
+* [x] env
 * [ ] cp
 * [ ] mv
 * [ ] rm

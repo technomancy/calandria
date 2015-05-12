@@ -1,0 +1,7 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+
+for k,v in pairs(env) do
+   print(k .. "=" ..v)
+end
