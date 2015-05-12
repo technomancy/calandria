@@ -1,5 +1,13 @@
 -- -*- lua -*-
 
 local f, env, args = ...
--- TODO: normalize arg
-env.CWD = args[1] or env.HOME
+local target_name = orb.fs.normalize(args[1] or env.HOME, env.CWD)
+local target = orb.fs.find(f, target_name, env)
+
+if(type(target) == "table") then
+   env.CWD = target_name
+elseif(type(target) == "string") then
+   print(target_name .. "is a file, not a directory.")
+else
+   print("No such directory " .. target_name)
+end

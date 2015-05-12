@@ -16,13 +16,24 @@ orb.utils = {
       table.insert(res,string.sub(str,pos))
       return res
    end,
-}
 
-if(minetest) then
-   orb.utils.mod_dir = minetest.get_modpath("orb")
-else
-   orb.utils.mod_dir = debug.getinfo(1,"S").source:sub(2, -3)
-end
+   shallow_copy = function(orig)
+      local orig_type = type(orig)
+      local copy
+      if orig_type == 'table' then
+         copy = {}
+         for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+         end
+      else -- number, string, boolean, etc
+         copy = orig
+      end
+      return copy
+   end,
+
+   mod_dir = (minetest and minetest.get_modpath("orb")) or
+      debug.getinfo(1,"S").source:sub(2, -9)
+}
 
 -- filesystem
 
@@ -76,25 +87,36 @@ orb.fs = {
          local path = "/" .. table.concat(resource_path, "/") ..
             "/resources/" .. content_path
          local file = io.open(path, "r")
-         orb.fs.find(f, dir)[base] = file:read("*all")
+         orb.fs.find(f, "/" .. dir)[base] = file:read("*all")
          file:close()
       end
       return f
    end,
 
    find = function(f, path, env)
-      if(not path:match("^/") and env and env.CWD) then
-         f = orb.fs.find(f, env.CWD)
-      end
+      path = orb.fs.normalize(path, env and env.CWD)
       if(path == "/") then return f end
       path = path:gsub("/$", "")
-      path_segments = orb.utils.split(path, "/")
-      final = table.remove(path_segments, #path_segments)
-      for _,p in pairs(path_segments) do
+      local segments = orb.utils.split(path, "/")
+      local final = table.remove(segments, #segments)
+      for _,p in pairs(segments) do
          f = f[p]
       end
       return f[final]
-   end
+   end,
+
+   normalize = function(path,  cwd)
+      if(not path:match("^/")) then path = cwd .. "/" .. path end
+      local final = {}
+      for _,segment in pairs(orb.utils.split(path, "/")) do
+         if(segment == "..") then
+            table.remove(final, #final)
+         else
+            final[#final + 1] = segment
+         end
+      end
+      return "/" .. table.concat(final, "/")
+   end,
 }
 
 -- shell
