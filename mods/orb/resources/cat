@@ -1,5 +1,6 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-local file = orb.fs.find(f, args[1], env)
-print(file)
+for _,file in pairs(args) do
+   print(orb.fs.find(f, file, env))
+end
