@@ -71,6 +71,7 @@ The OS should have an email setup as well as lots of man pages.
 * [x] mv
 * [x] rm
 * [x] echo
+* [x] export
 * [x] smash (bash-like)
 * [ ] an editor (hoooo boy this is gonna be fun!)
 * [ ] chmod
@@ -83,6 +84,16 @@ The OS should have an email setup as well as lots of man pages.
 * [ ] kill?
 * [ ] more
 * [ ] passwd
+
+## Security
+
+Need to sandbox in orb.shell.exec, but this still causes problems as
+the env table can be modified. Do we send a copy of this table to
+scripts? Then export needs to become a primitive.
+
+Then there's the question of reading, writing, and executing with the
+filesystem. Maybe scripts need a wrapped copy of the fs which only
+exposes the nodes for which the user has access?
 
 ## Blocks
 

@@ -89,6 +89,7 @@ orb.fs = {
                                        rm = "/bin/rm",
                                        echo = "/bin/echo",
                                        smash = "/bin/smash",
+                                       export = "/bin/export",
       }) do
          local dir, base = orb.fs.dirname(path)
          local resource_path = orb.utils.split(orb.utils.mod_dir, "/")
