@@ -46,26 +46,22 @@ orb.fs = {
       return {_user = "root", _group = "root", _permissions = 493}
    end,
 
-   mkdir = function(f, path, parent)
-      first, rest = path:match("(/[^/]+)/(.*)")
-      if(first) then
-         orb.fs.mkdir(f[first:gsub("^/", "" )], rest, f)
-      else
-         parent = parent or {_user = "root", _group = "root",
-                             _permissions = 493} -- 755 in decimal
-         f[path:gsub("/", "")] = {
-            _user = parent._user,
-            _group = parent._group,
-            _permissions = parent._permissions,
-         }
-      end
+   mkdir = function(f, path, env)
+      local dir, base = orb.fs.dirname(path)
+      local parent = orb.fs.find(f, dir, env) or f
+      -- if(not parent) then orb.fs.mkdir(f, dir, env) end
+      parent[base] = {
+         _user = parent._user,
+         _group = parent._group,
+         _permissions = parent._permissions,
+      }
    end,
 
    dirname = function(path)
       local t = orb.utils.split(path, "/")
       local basename = t[#t]
       table.remove(t, #t)
-      return table.concat(t, "/"), basename
+      return "/" .. table.concat(t, "/"), basename
    end,
 
    seed = function(f, users)
@@ -104,7 +100,7 @@ orb.fs = {
    end,
 
    find = function(f, path, env)
-      path = orb.fs.normalize(path, env and env.CWD)
+      if(env and env.CWD) then path = orb.fs.normalize(path, env.CWD) end
       if(path == "/") then return f end
       path = path:gsub("/$", "")
       local segments = orb.utils.split(path, "/")
@@ -159,8 +155,8 @@ orb.shell = {
 f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
 e1 = orb.shell.new_env("technomancy")
 orb.shell.exec(f1, e1, "mkdir /tmp/hi")
-orb.shell.exec(f1, e1, "mkdir /tmp/hi/ho") -- TODO: this is broken
+orb.shell.exec(f1, e1, "mkdir /tmp/hi/ho")
 orb.shell.exec(f1, e1, "ls /tmp/hi")
 
 -- interactively:
--- orb.shell.exec(f1, e1, "smash")
+if(arg) then orb.shell.exec(f1, e1, "smash") end

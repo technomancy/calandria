@@ -1,5 +1,4 @@
 -- -*- lua -*-
 
 local f, env, args = ...
--- TODO: relative paths
-orb.fs.mkdir(f, args[1])
+orb.fs.mkdir(f, args[1], env)
