@@ -1,0 +1,14 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+local env = orb.utils.shallow_copy(env)
+
+local smashrc = orb.fs.find(f, env.HOME .. "/.smashrc")
+if(smashrc) then local f = loadstring(smashrc) assert(f) return f() end
+
+while true do
+   io.write(env.PROMPT)
+   local input = io.read()
+   if not input or input == "exit" or input == "logout" then return end
+   orb.shell.exec(f, env, input)
+end

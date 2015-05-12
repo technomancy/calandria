@@ -80,6 +80,7 @@ orb.fs = {
                                        cd = "/bin/cd",
                                        cat = "/bin/cat",
                                        env = "/bin/env",
+                                       smash = "/bin/smash",
       }) do
          local dir, base = orb.fs.dirname(path)
          local resource_path = orb.utils.split(orb.utils.mod_dir, "/")
@@ -142,14 +143,6 @@ orb.shell = {
       end
       print(executable_name .. " not found.")
    end,
-
-   run = function(f, env)
-      io.write(env.PROMPT)
-      local input = io.read()
-      if not input or input == "exit" or input == "logout" then return end
-      orb.shell.exec(f, env, input)
-      orb.shell.run(f, env)
-   end
 }
 
 f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
@@ -159,5 +152,4 @@ orb.shell.exec(f1, e1, "mkdir /tmp/hi/ho") -- TODO: this is broken
 orb.shell.exec(f1, e1, "ls /tmp/hi")
 
 -- interactively:
--- orb.shell.run(f1, e1)
-
+-- orb.shell.exec(f1, e1, "smash")
