@@ -1,0 +1,7 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+for _,filename in pairs(args) do
+   local dir, base = orb.fs.dirname(filename)
+   orb.fs.find(f, dir, env)[base] = nil
+end

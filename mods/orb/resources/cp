@@ -1,0 +1,6 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+local to_dir, to_base = orb.fs.dirname(args[2])
+local target = orb.fs.find(f, to_dir, env)
+target[to_base] = orb.fs.find(f, args[1], env)

@@ -80,6 +80,10 @@ orb.fs = {
                                        cd = "/bin/cd",
                                        cat = "/bin/cat",
                                        env = "/bin/env",
+                                       mv = "/bin/mv",
+                                       cp = "/bin/cp",
+                                       rm = "/bin/rm",
+                                       echo = "/bin/echo",
                                        smash = "/bin/smash",
       }) do
          local dir, base = orb.fs.dirname(path)
@@ -107,6 +111,7 @@ orb.fs = {
    end,
 
    normalize = function(path,  cwd)
+      if(path == ".") then return cwd end
       if(not path:match("^/")) then path = cwd .. "/" .. path end
       local final = {}
       for _,segment in pairs(orb.utils.split(path, "/")) do

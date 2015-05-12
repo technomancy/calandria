@@ -1,0 +1,4 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+print(table.concat(args, " "))

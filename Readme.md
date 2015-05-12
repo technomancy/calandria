@@ -67,10 +67,11 @@ The OS should have an email setup as well as lots of man pages.
 * [x] cat
 * [x] mkdir
 * [x] env
-* [ ] cp
-* [ ] mv
-* [ ] rm
-* [ ] smash (bash-like)
+* [x] cp
+* [x] mv
+* [x] rm
+* [x] echo
+* [x] smash (bash-like)
 * [ ] an editor (hoooo boy this is gonna be fun!)
 * [ ] chmod
 * [ ] chown

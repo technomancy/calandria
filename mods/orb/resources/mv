@@ -1,0 +1,5 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+orb.shell.exec(f, env, "cp " .. args[1] .. " " .. args[2])
+orb.shell.exec(f, env, "rm " .. args[1])
