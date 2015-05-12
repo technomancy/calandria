@@ -2,5 +2,5 @@
 
 local f, env, args = ...
 for _,file in pairs(args) do
-   print(orb.fs.find(f, file, env))
+   print(orb.find(f, file, env))
 end

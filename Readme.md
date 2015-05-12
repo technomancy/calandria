@@ -73,9 +73,9 @@ The OS should have an email setup as well as lots of man pages.
 * [x] echo
 * [x] export
 * [x] smash (bash-like)
-* [ ] an editor (hoooo boy this is gonna be fun!)
 * [ ] chmod
 * [ ] chown
+* [ ] an editor (hoooo boy this is gonna be fun!)
 * [ ] man
 * [ ] mail
 * [ ] ssh
@@ -84,6 +84,13 @@ The OS should have an email setup as well as lots of man pages.
 * [ ] kill?
 * [ ] more
 * [ ] passwd
+
+Other shell features
+* [x] sandbox scripts
+* [ ] enforce access controls in the filesystem
+* [ ] globs
+* [ ] env var interpolation
+* [ ] quoting in shell args
 
 ## Security
 

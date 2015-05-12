@@ -1,4 +1,4 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-orb.fs.mkdir(f, args[1], env)
+orb.mkdir(f, args[1], env)

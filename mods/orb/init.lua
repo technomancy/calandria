@@ -124,6 +124,28 @@ orb.fs = {
       end
       return "/" .. table.concat(final, "/")
    end,
+
+   permissions_for = function(f, filename, env)
+      local file = orb.fs.find(f, filename, env)
+      -- this kind of sucks; files currently don't have permissions, just dirs
+      if(type(file) == "string") then
+         file = orb.fs.find(f, filename .. "/..", env)
+      end
+      return file._permissions, file._user, file._group
+   end,
+
+   accessible = function(f, filename, env)
+      -- bitwise operations were introduced in lua 5.2
+      -- TODO: test this; it'd be a miracle if it actually worked
+      local permissions, user, group = orb.fs.permissions_for(f, filename, env)
+      if(user == env.USER and permissions % 8 > 3) then return true end
+      permissions = (permissions - (permissions % 8)) / 8
+      for _,ugroup in pairs(orb.shell.groups(env.USER)) do
+         if(group == ugroup and permissions % 8 > 3) then return true end
+      end
+      permissions = (permissions - (permissions % 8)) / 8
+      return permissions % 8 > 3
+   end,
 }
 
 -- shell
@@ -140,22 +162,40 @@ orb.shell = {
       args = orb.utils.split(command, " ")
       executable_name = table.remove(args, 1)
       for _,d in pairs(orb.utils.split(env.PATH, ":")) do
+         local executable_path = d .. "/" .. executable_name
          executable = orb.fs.find(f, d)[executable_name]
-         if(executable) then
+         if(executable and orb.fs.accessible(f, executable_path, env)) then
             local chunk = assert(loadstring(executable))
-            -- TODO: sandbox with this:
-            -- setfenv(chunk, process_env)
+            setfenv(chunk, orb.shell.sandbox())
             return chunk(f, env, args)
          end
       end
       print(executable_name .. " not found.")
    end,
+
+   sandbox = function()
+      return { orb = { utils = orb.utils,
+                       dirname = orb.fs.dirname,
+                       normalize = orb.fs.normalize,
+                       mkdir = orb.fs.mkdir,
+                       find = orb.fs.find,
+                       exec = orb.shell.exec
+                     },
+               pairs = pairs,
+               print = print,
+               io = { write = io.write, read = io.read },
+               type = type,
+               table = { concat = table.concat },
+      }
+   end,
+
+   -- TODO: look this up in the groups DB
+   groups = function(user) return {user} end,
 }
 
 f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
 e1 = orb.shell.new_env("technomancy")
 orb.shell.exec(f1, e1, "mkdir /tmp/hi")
-orb.shell.exec(f1, e1, "mkdir /tmp/hi/ho")
 orb.shell.exec(f1, e1, "ls /tmp/hi")
 
 -- interactively:
