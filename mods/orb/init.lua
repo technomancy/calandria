@@ -32,7 +32,11 @@ orb.utils = {
    end,
 
    mod_dir = (minetest and minetest.get_modpath("orb")) or
-      debug.getinfo(1,"S").source:sub(2, -9)
+      debug.getinfo(1,"S").source:sub(2, -9),
+
+   interp = function(s, tab)
+      return (s:gsub('($%b{})', function(w) return tab[w:sub(3, -2)] or w end))
+   end,
 }
 
 -- filesystem
@@ -129,8 +133,9 @@ orb.fs = {
 
 orb.shell = {
    new_env = function(user)
-      return {PATH = "/bin", PROMPT = "$ ", CWD = "/",
-              HOME = "/home/" .. user
+      local home = "/home/" .. user
+      return { PATH = "/bin", PROMPT = "${CWD} $ ", SHELL = "/bin/smash",
+               CWD = home, HOME = home,
       }
    end,
 
