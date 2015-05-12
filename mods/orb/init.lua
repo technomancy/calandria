@@ -28,10 +28,11 @@ end
 
 orb.fs = {
    empty = function()
-      return {_user = "root", _group = "root", _permissions = 755}
+      return {_user = "root", _group = "root", _permissions = 493}
    end,
 
    mkdir = function(f, path, parent)
+      print(path)
       first, rest = path:match("(/[^/]+)/(.*)")
       if(first) then
          orb.fs.mkdir(f[first:gsub("^/", "" )], rest, f)
@@ -64,7 +65,9 @@ orb.fs = {
          orb.fs.find_dir(f, home)["_user"] = u
          orb.fs.find_dir(f, home)["_group"] = u
       end
-      for content_path, path in pairs({ls = "/bin/ls"}) do
+      for content_path, path in pairs({ls = "/bin/ls",
+                                       mkdir = "/bin/mkdir",
+      }) do
          local dir, base = orb.fs.dirname(path)
          local resource_path = orb.utils.split(orb.utils.mod_dir, "/")
          table.remove(resource_path, #resource_path)
@@ -115,5 +118,5 @@ orb.shell = {
 f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
 orb.fs.find_dir(f1, "/")
 orb.shell.exec(f1, orb.shell.new_env(), "ls /home")
-orb.shell.exec(f1, orb.shell.new_env(), "ls /bin")
-orb.shell.exec(f1, orb.shell.new_env(), "ls /")
+print("running")
+orb.shell.exec(f1, orb.shell.new_env(), "mkdir /tmp/hi")
