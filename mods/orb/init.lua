@@ -193,10 +193,11 @@ orb.shell = {
    groups = function(user) return {user} end,
 }
 
-f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
-e1 = orb.shell.new_env("technomancy")
-orb.shell.exec(f1, e1, "mkdir /tmp/hi")
-orb.shell.exec(f1, e1, "ls /tmp/hi")
-
 -- interactively:
-if(arg) then orb.shell.exec(f1, e1, "smash") end
+if(arg) then
+   f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddy_berg", "zacherson"})
+   e1 = orb.shell.new_env("technomancy")
+   orb.shell.exec(f1, e1, "mkdir /tmp/hi")
+   orb.shell.exec(f1, e1, "ls /tmp/hi")
+   orb.shell.exec(f1, e1, "smash")
+end
