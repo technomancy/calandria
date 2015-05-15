@@ -128,6 +128,39 @@ exposes the nodes for which the user has access?
 * Power cells
 * Sonic screwdriver
 
+## Prior Art
+
+[ComputerCraft](http://computercraft.info/) is a mod for MineCraft
+that has computer blocks as well as programmable turtles that can
+manipulate the environment. However, it is not free software, nor is
+the engine on which it runs, which renders it unsuitable for our
+purposes. The terminal and editor it implements is very good, but the
+OS is single-user.
+
+[DroneTest](https://github.com/ninnghazad/dronetest) has programmable
+computer nodes as well as drone entities that can move
+around. However, it does all its output by generating textures for the
+display node every time it needs to change, and the MineTest engine
+does not garbage collect old images. This means every DroneTest game
+will eventually run out of memory. In addition, it does not implement
+a terminal, relying instead on line-by-line commands. Plus I couldn't
+get it working on my own machine.
+
+[A MineTest pull request](https://github.com/minetest/minetest/pull/1737)
+implements the ability to accept character-based input instead of
+line-based input, but it has not been merged and hasn't seen any
+activity since December of 2014. It is just the first prerequisite to
+building a terminal in MineTest, but it looks promising.
+
+The [Terminal](https://github.com/bas080/terminal) MineTest mod claims
+to implement a terminal, but it doesn't. It only allows for shell
+commands to be run using a line-based input, and streaming output to
+the messages output.
+
+It seems like implementing a terminal is going to be the biggest
+technical challenge for this mod since no one has so far accomplished
+this satisfactorily.
+
 ## License
 
 Textures: [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)
