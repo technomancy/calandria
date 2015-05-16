@@ -25,20 +25,17 @@ the robot.
 
 ## Ship
 
-The ship should have an onboard computer. (or three?
-command/engineering/science?) The computers need an operating
-system. It should be roughly Unix, supporting multiple users and a
-filesystem, but with metric time (a la Vinge).
-
-You start out with access to your own user on a single computer via a
-keypair. You only have access to a handful of diagnostic utilities. As
-you progress, you can be added to new groups and gain private keys for
-other users' accounts. You may start with access to the science
-computer and need to gain access to engineering and command separately.
+The ship is powered by a main power reactor with a backup solar array
+for auxiliary power. There are a number of decks. Each deck will have
+conduits running under it for bringing power to the various
+systems. Normally you would travel between decks with the elevators,
+but with main power offline you would need to climb ladders in shafts.
 
 Some areas of the ship have oxygen, but some are depressurized. The
 robot can repair the hull breaches, and the oxygen system can pump
-atmosphere into the breached rooms.
+atmosphere into the breached rooms. It would be really cool if we
+could model atmosphere as an invisible MineTest liquid, assuming we
+can invert the normal damage logic.
 
 A bunch of systems, including the robot, have been damaged. Some of
 them you will need to get power to. When the game begins, the ship
@@ -47,20 +44,52 @@ activate all the ship's systems. Bringing main power online is a
 significant goal. Power mechanics are inspired by FTL, but controlled
 via a unixlike system.
 
-The OS should have an email setup as well as lots of man pages.
+Systems are broken up by decks; each deck has its own computer. Doors
+and airlocks for each deck can be controlled by the deck computer if
+powered, but also have a switch next to them that can be remotely
+overridden.
 
-## Ship systems
+### Command Deck
 
-* Doors
-* Reactor
-* Shields
 * Navigation
-* Sensors
-* Gravity
-* Oxygen
 * Communication
+* Shields
+* Elevator
 
-## OS Executables
+### Science Deck
+
+* Sensors
+* Lab
+* Cargo Bay
+
+### Habitat Deck
+
+* Oxygen
+* Gravity
+* Mess hall
+* Cabins
+
+### Engineering Deck
+
+* Reactor
+* Engines
+* Solar array
+* Robotics
+
+## OS
+
+The ship's onboard computers will need an operating system. It should
+be roughly Unix, supporting multiple users/groups and a filesystem,
+but with metric time (a la Vinge).
+
+You start out with access to your own user on a single computer via a
+keypair. You only have access to a handful of diagnostic utilities. As
+you progress, you can be added to new groups and gain private keys for
+other users' accounts. You may start with access to the science
+computer and need to gain access to engineering and command
+separately.
+
+### Executables
 
 * [x] ls
 * [x] cd
@@ -86,47 +115,76 @@ The OS should have an email setup as well as lots of man pages.
 * [ ] passwd
 
 Other shell features
-* [x] sandbox scripts
+
+* [x] sandbox scripts (limited api access)
 * [ ] enforce access controls in the filesystem
 * [ ] globs
 * [ ] env var interpolation
 * [ ] quoting in shell args
+* [ ] pre-emptive multitasking (see [this thread](https://forum.minetest.net/viewtopic.php?f=47&t=10185) for implementation ideas)
 
-## Security
+### Security
 
 Need to sandbox in orb.shell.exec, but this still causes problems as
 the env table can be modified. Do we send a copy of this table to
-scripts? Then export needs to become a primitive.
+scripts? Then export needs to become a primitive. (which it is in bash
+anyway, nbd.)
 
 Then there's the question of reading, writing, and executing with the
 filesystem. Maybe scripts need a wrapped copy of the fs which only
 exposes the nodes for which the user has access?
 
+Private and public keys are inventory items. Placing a public key in a
+server inventory will allow the holder of the private key to log on.
+
 ## Blocks
+
+### Decorative
 
 * [x] Steel blocks
 * [x] Duranium (decorative alternative to steel)
 * [x] Tritanium (decorative alternative to steel)
 * [x] Glass
+* [ ] Corridor arches
+* [ ] Signs (can't be wooden)
+* [ ] Damaged wires
+* [x] Beds
+
+### Electronic
+
 * [ ] Computers
 * [ ] Drives? (or the computer has an inventory)
 * [x] Switches (use mesecons)
 * [x] buttons (use mesecons)
 * [x] Wires (use mesecons)
-* [ ] Doors
-* [ ] Corridor arches
-* [x] Light panels
-* [ ] Debris
-* [ ] Elevators
-* [ ] Damaged circuits
+* [ ] Indicators (light up when power/signal is on)
+* [ ] Analog meters (shows how powerful a signal is)
 * [ ] Power receptacle
+
+### Powered blocks
+
+* [x] Light panels
+* [ ] Light columns
+* [ ] Doors
+* [ ] Airlocks
+* [ ] Elevators
+
+### Other
+
+* [ ] Hatches
+* [ ] Vents
+* [ ] Debris
+* [ ] Chairs
+* [ ] Ladders
+* [ ] Coolant (liquid)
+
+* [ ] Remove non-space blocks (axes, dirt, etc)
 
 ## New items
 
 * Private key
 * Public key
 * Power cells
-* Sonic screwdriver
 
 ## Prior Art
 
@@ -144,7 +202,7 @@ display node every time it needs to change, and the MineTest engine
 does not garbage collect old images. This means every DroneTest game
 will eventually run out of memory. In addition, it does not implement
 a terminal, relying instead on line-by-line commands. Plus I couldn't
-get it working on my own machine.
+get it working on my own machine. Also: the name is cringe-worthy.
 
 [A MineTest pull request](https://github.com/minetest/minetest/pull/1737)
 implements the ability to accept character-based input instead of
