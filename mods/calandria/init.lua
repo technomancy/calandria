@@ -1,5 +1,5 @@
 minetest.register_on_joinplayer(function(player)
-      player:set_physics_override({gravity = 0.1})
+      player:set_physics_override({gravity = 0.2})
 end)
 
 dofile(minetest.get_modpath("calandria").."/nodes.lua")
