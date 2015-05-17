@@ -158,22 +158,28 @@ orb.shell = {
       }
    end,
 
-   exec = function(f, env, command)
+   exec = function(f, env, command, out)
       args = orb.utils.split(command, " ")
       executable_name = table.remove(args, 1)
-      for _,d in pairs(orb.utils.split(env.PATH, ":")) do
+      for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
          executable = orb.fs.find(f, d)[executable_name]
          if(executable and orb.fs.accessible(f, executable_path, env)) then
             local chunk = assert(loadstring(executable))
-            setfenv(chunk, orb.shell.sandbox())
+            setfenv(chunk, orb.shell.sandbox(out))
             return chunk(f, env, args)
          end
       end
       print(executable_name .. " not found.")
    end,
 
-   sandbox = function()
+   sandbox = function(out)
+      if(out) then
+         local printer = function(string) table.insert(out, string) end
+      else
+         local printer = print
+      end
+
       return { orb = { utils = orb.utils,
                        dirname = orb.fs.dirname,
                        normalize = orb.fs.normalize,
@@ -182,7 +188,7 @@ orb.shell = {
                        exec = orb.shell.exec
                      },
                pairs = pairs,
-               print = print,
+               print = printer,
                io = { write = io.write, read = io.read },
                type = type,
                table = { concat = table.concat },
@@ -190,8 +196,7 @@ orb.shell = {
    end,
 
    -- TODO: look this up in the groups DB
-   groups = function(user) return {user} end,
-}
+   groups = function(user) return {user} end,}
 
 -- interactively:
 if(arg) then
