@@ -32,7 +32,7 @@ orb.utils = {
    end,
 
    mod_dir = (minetest and minetest.get_modpath("orb")) or
-      debug.getinfo(1,"S").source:sub(2, -9),
+      debug.getinfo(1,"S").source:sub(2, -9), -- TODO: need trimming here I think
 
    interp = function(s, tab)
       return (s:gsub('($%b{})', function(w) return tab[w:sub(3, -2)] or w end))
@@ -88,10 +88,8 @@ orb.fs = {
                                        export = "/bin/export",
       }) do
          local dir, base = orb.fs.dirname(path)
-         local resource_path = orb.utils.split(orb.utils.mod_dir, "/")
-         table.remove(resource_path, #resource_path)
-         local path = "/" .. table.concat(resource_path, "/") ..
-            "/resources/" .. content_path
+         local path = "/" .. orb.utils.mod_dir .. "/resources/" .. content_path
+
          local file = io.open(path, "r")
          orb.fs.find(f, "/" .. dir)[base] = file:read("*all")
          file:close()
@@ -159,11 +157,11 @@ orb.shell = {
    end,
 
    exec = function(f, env, command, out)
-      args = orb.utils.split(command, " ")
-      executable_name = table.remove(args, 1)
+      local args = orb.utils.split(command, " ")
+      local executable_name = table.remove(args, 1)
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
-         executable = orb.fs.find(f, d)[executable_name]
+         local executable = orb.fs.find(f, d)[executable_name]
          if(executable and orb.fs.accessible(f, executable_path, env)) then
             local chunk = assert(loadstring(executable))
             setfenv(chunk, orb.shell.sandbox(out))
@@ -174,11 +172,8 @@ orb.shell = {
    end,
 
    sandbox = function(out)
-      if(out) then
-         local printer = function(string) table.insert(out, string) end
-      else
-         local printer = print
-      end
+      local printer = print
+      if(out) then printer = function(str) table.insert(out, str) end end
 
       return { orb = { utils = orb.utils,
                        dirname = orb.fs.dirname,

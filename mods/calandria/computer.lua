@@ -1,37 +1,41 @@
+-- can't use tables as table keys; lame but understandable
+local key_for = function(p) return "p" .. p.x .. "-" .. p.y .. "-" .. p.z end
+
 calandria.computer = {
-   nodes = {},
+   placed = {},
 
    after_place = function(pos, placer, _itemstack, _pointed)
-      local meta = minetest.get_meta(pos)
-      meta:set_string('channel', '') -- start on an empty channel
-      local node = minetest.get_node(pos)
-      calandria.computer.nodes[node] =
-         calandria.computer.make(player)
+      -- TODO: determine channel somehow
+      calandria.computer.placed[key_for(pos)] =
+         calandria.computer.make(placer:get_player_name())
    end,
 
    make = function(player)
       local fs = orb.fs.seed(orb.fs.empty(), {player})
       local envs = {}
       local owner = player
+      envs[owner] = orb.shell.new_env(owner)
+
       return {
          exec = function(input, player)
-            envs[player] = envs[player] or orb.shell.new_env(player)
+            if(not envs[player]) then return "No account on this server." end
 
             local out = {}
-            orb.shell.exec(fs, envs[player], input)
-            return table.concat(out, "\n")
+            orb.shell.exec(fs, envs[player], input, out)
+            return "$ " .. input .. "\n" .. table.concat(out, "\n") .. "\n\n"
          end
       }
    end,
 
    digiline_action = function(pos, node, channel, msg)
-      local meta = minetest.get_meta(pos);
-      if channel ~= meta:get_string('channel') then return end
+      if(type(msg) == "function") then
+         local value = msg()
+         if not value.msg then return end
 
-      local node = minetest.get_node(pos)
-      local result = meta.computer.nodes[node].exec(msg.msg, msg.player)
-      digiline:receptor_send(pos, digiline.rules.default,
-                             meta:get_string('channel'), fields.input);
+         local computer = calandria.computer.placed[key_for(pos)]
+         local result = computer.exec(value.msg, value.player)
+         digiline:receptor_send(pos, digiline.rules.default, channel, result)
+      end
    end,
 }
 
