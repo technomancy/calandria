@@ -2,5 +2,9 @@ minetest.register_on_joinplayer(function(player)
       player:set_physics_override({gravity = 0.2})
 end)
 
+calandria = {}
+
 dofile(minetest.get_modpath("calandria").."/nodes.lua")
 dofile(minetest.get_modpath("calandria").."/mapgen.lua")
+dofile(minetest.get_modpath("calandria").."/computer.lua")
+
