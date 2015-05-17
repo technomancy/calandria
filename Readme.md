@@ -153,6 +153,7 @@ server inventory will allow the holder of the private key to log on.
 ### Electronic
 
 * [ ] Computers
+* [ ] Terminals
 * [ ] Drives? (or the computer has an inventory)
 * [x] Switches (use mesecons)
 * [x] buttons (use mesecons)

@@ -12,6 +12,20 @@ minetest.register_node("calandria:steel", {
     groups = {cracky=3,level=1},
 })
 
+minetest.register_node("calandria:steelhalf", {
+    description = "Steel Half",
+    drawtype = "nodebox",
+    paramtype = "light",
+    node_box = {
+        type = "fixed",
+        fixed = {
+            {-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+        },
+    },
+    tiles = {"calandria_steel.png"},
+    groups = {cracky=3,level=1},
+})
+
 minetest.register_node("calandria:duranium", {
     description = "Duranium",
     drawtype = "nodebox",
