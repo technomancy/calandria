@@ -6,5 +6,5 @@ calandria = {}
 
 dofile(minetest.get_modpath("calandria").."/nodes.lua")
 dofile(minetest.get_modpath("calandria").."/mapgen.lua")
-dofile(minetest.get_modpath("calandria").."/computer.lua")
+dofile(minetest.get_modpath("calandria").."/server.lua")
 
