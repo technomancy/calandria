@@ -3,10 +3,14 @@
 This is a game that uses the [MineTest engine](http://www.minetest.net) to
 teach programming and other technical skills.
 
+<img src="http://p.hagelb.org/calandria-shell.png" alt="shell screenshot" width="600" />
+
 You are in a spaceship that has been damaged by asteroid impact. You're
 trying to get home by repairing and operating vital ship systems.
 There is a repair robot, but its programming has been destroyed in the
 accident, so you need to reprogram it, among other things.
+
+<img src="http://p.hagelb.org/calandria-corridor.png" alt="shell screenshot" width="600" />
 
 ## Repairs/Puzzles
 
@@ -48,6 +52,8 @@ Systems are broken up by decks; each deck has its own computer. Doors
 and airlocks for each deck can be controlled by the deck computer if
 powered, but also have a switch next to them that can be remotely
 overridden.
+
+<img src="http://p.hagelb.org/calandria-cargo-bay.png" alt="shell screenshot" width="600" />
 
 ### Command Deck
 
