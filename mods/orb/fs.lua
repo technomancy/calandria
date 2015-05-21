@@ -1,13 +1,13 @@
 -- fake lil filesystem
 orb.fs = {
    empty = function()
-      return {_user = "root", _group = "root"}
+      return {_user = "root", _group = "all"}
    end,
 
    mkdir = function(f, path, env)
       local dir, base = orb.fs.dirname(path)
       local parent = orb.fs.find(f, dir, env) or f
-      -- if(not parent) then orb.fs.mkdir(f, dir, env) end
+      if(not parent) then orb.fs.mkdir(f, dir, env) end
       if(parent[base]) then return parent[base] end
       parent[base] = {
          _user = parent._user,
@@ -39,9 +39,10 @@ orb.fs = {
          orb.fs.mkdir(f, d)
       end
       orb.fs.mkdir(f, "/etc/groups")
+      orb.fs.find(f, "/home")["_group"] = "all"
+      orb.fs.find(f, "/bin")["_group"] = "all"
       orb.fs.find(f, "/tmp")["_group"] = "all"
       orb.fs.find(f, "/tmp")["_group_write"] = true
-      orb.fs.find(f, "/bin")["_group"] = "all"
       for _,u in pairs(users) do
          local home = "/home/" .. u
          orb.fs.mkdir(f, home)
@@ -107,14 +108,38 @@ orb.fs = {
       return file._user, file._group, file._group_write
    end,
 
-   readable = function(f, filename, env)
-      local user, group = orb.fs.owner(f, filename, env)
-      return user == env.USER or orb.shell.in_group(f, env.USER, group)
+   readable = function(f, filename, user)
+      local owner, group = orb.fs.owner(f, filename)
+      return owner == user or orb.shell.in_group(f, user, group)
    end,
 
-   writeable = function(f, filename, env)
-      local user, group, group_write = orb.fs.owner(f, filename, env)
-      return user == env.USER or
-         (group_write and orb.shell.in_group(f, env.USER, group))
+   writeable = function(f, filename, user)
+      local owner, group, group_write = orb.fs.owner(f, filename)
+      return owner == user or
+         (group_write and orb.shell.in_group(f, user, group))
+   end,
+
+   protected_fs = function(raw, user)
+      if(user == "root") then return raw end
+      local f = {}
+      local mt = {
+         __index = function (_f, path)
+            print("Reading " ..path)
+            assert(orb.fs.readable(raw, path, user), "Not readable: " .. path)
+            local file_or_dir = raw[path]
+            if(type(file_or_dir) == "table") then
+               return orb.fs.protected_fs(file_or_dir, user)
+            else
+               return file_or_dir
+            end
+         end,
+
+         __newindex = function (_f, path, content)
+            assert(orb.fs.writeable(raw, path, user), "Not writeable: " .. path)
+            raw[path] = content
+         end
+      }
+      setmetatable(f, mt)
+      return f
    end,
 }

@@ -52,6 +52,7 @@ dofile(orb.utils.mod_dir .. "shell.lua")
 if(arg) then
    assert(orb.utils.mod_dir ~= "", "Could not determine mod dir.")
    f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddyberg", "zacherson"})
+   e0 = orb.shell.new_env("root")
    e1 = orb.shell.new_env("technomancy")
 
    local t_groups = orb.shell.groups(f1, "technomancy")
@@ -60,7 +61,11 @@ if(arg) then
 
    orb.shell.exec(f1, e1, "mkdir /tmp/hi")
    orb.shell.exec(f1, e1, "ls /tmp/hi")
-   orb.shell.exec(f1, e1, "ls /etc")
+   orb.shell.exec(f1, e0, "ls /etc")
+
+   assert(orb.fs.readable(f1, "/home/technomancy", "technomancy"))
+   assert(not orb.fs.readable(f1, "/home/notfound", "technomancy"))
+   assert(not orb.fs.readable(f1, "/home/zacherson", "technomancy"))
 
    orb.shell.exec(f1, e1, "smash")
 end

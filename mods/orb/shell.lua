@@ -3,18 +3,20 @@
 orb.shell = {
    new_env = function(user)
       local home = "/home/" .. user
+      -- TODO: protected env: shouldn't be allowed to change USER
       return { PATH = "/bin", PROMPT = "${CWD} $ ", SHELL = "/bin/smash",
                CWD = home, HOME = home, USER = user,
       }
    end,
 
-   exec = function(f, env, command, out)
+   exec = function(raw_f, env, command, out)
       local args = orb.utils.split(command, " ")
       local executable_name = table.remove(args, 1)
+      local f = orb.fs.protected_fs(raw_f, env.USER)
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
          local executable = orb.fs.find(f, d)[executable_name]
-         if(executable and orb.fs.readable(f, executable_path, env)) then
+         if(executable) then
             local chunk = assert(loadstring(executable))
             setfenv(chunk, orb.shell.sandbox(out))
             return chunk(f, env, args)
