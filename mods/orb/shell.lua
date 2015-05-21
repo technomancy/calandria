@@ -4,7 +4,7 @@ orb.shell = {
    new_env = function(user)
       local home = "/home/" .. user
       return { PATH = "/bin", PROMPT = "${CWD} $ ", SHELL = "/bin/smash",
-               CWD = home, HOME = home,
+               CWD = home, HOME = home, USER = user,
       }
    end,
 
@@ -14,7 +14,7 @@ orb.shell = {
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
          local executable = orb.fs.find(f, d)[executable_name]
-         if(executable and orb.fs.accessible(f, executable_path, env)) then
+         if(executable and orb.fs.readable(f, executable_path, env)) then
             local chunk = assert(loadstring(executable))
             setfenv(chunk, orb.shell.sandbox(out))
             return chunk(f, env, args)
@@ -50,4 +50,11 @@ orb.shell = {
          end
       end
       return found
-   end,}
+   end,
+
+   in_group = function(f, user, group)
+      local group_dir = orb.fs.find(f, "/etc/groups/" .. group)
+      if(not group_dir) then return false end
+      return group_dir[user]
+   end,
+}

@@ -1,18 +1,19 @@
 -- fake lil filesystem
 orb.fs = {
    empty = function()
-      return {_user = "root", _group = "root", _permissions = 493}
+      return {_user = "root", _group = "root"}
    end,
 
    mkdir = function(f, path, env)
       local dir, base = orb.fs.dirname(path)
       local parent = orb.fs.find(f, dir, env) or f
       -- if(not parent) then orb.fs.mkdir(f, dir, env) end
+      if(parent[base]) then return parent[base] end
       parent[base] = {
          _user = parent._user,
          _group = parent._group,
-         _permissions = parent._permissions,
       }
+      return parent[base]
    end,
 
    dirname = function(path)
@@ -24,9 +25,13 @@ orb.fs = {
 
    add_to_group = function(f, user, group)
       assert(type(user) == "string" and type(group) == "string")
-      local groups = orb.fs.find(f, "/etc/groups")
-      groups[group] = groups[group] or {}
-      table.insert(groups[group], user)
+      local group_dir = orb.fs.find(f, "/etc/groups/" .. group)
+      if(not group_dir) then
+         group_dir = orb.fs.mkdir(f, "/etc/groups/" .. group)
+         group_dir._user = user
+      end
+      group_dir._group = group
+      group_dir[user] = user
    end,
 
    seed = function(f, users)
@@ -34,7 +39,10 @@ orb.fs = {
          orb.fs.mkdir(f, d)
       end
       orb.fs.mkdir(f, "/etc/groups")
-      orb.fs.find(f, "/tmp")["_permissions"] = 511 -- 777 in decimal
+      pp(f)
+      orb.fs.find(f, "/tmp")["_group"] = "all"
+      orb.fs.find(f, "/tmp")["_group_write"] = true
+      orb.fs.find(f, "/bin")["_group"] = "all"
       for _,u in pairs(users) do
          local home = "/home/" .. u
          orb.fs.mkdir(f, home)
@@ -72,6 +80,7 @@ orb.fs = {
       local segments = orb.utils.split(path, "/")
       local final = table.remove(segments, #segments)
       for _,p in pairs(segments) do
+         assert(f, "Path not found: " .. path)
          f = f[p]
       end
       return f[final]
@@ -91,25 +100,22 @@ orb.fs = {
       return "/" .. table.concat(final, "/")
    end,
 
-   permissions_for = function(f, filename, env)
+   owner = function(f, filename, env)
       local file = orb.fs.find(f, filename, env)
-      -- this kind of sucks; files currently don't have permissions, just dirs
       if(type(file) == "string") then
          file = orb.fs.find(f, filename .. "/..", env)
       end
-      return file._permissions, file._user, file._group
+      return file._user, file._group, file._group_write
    end,
 
-   accessible = function(f, filename, env)
-      -- bitwise operations were introduced in lua 5.2
-      -- TODO: test this; it'd be a miracle if it actually worked
-      local permissions, user, group = orb.fs.permissions_for(f, filename, env)
-      if(user == env.USER and permissions % 8 > 3) then return true end
-      permissions = (permissions - (permissions % 8)) / 8
-      for _,ugroup in pairs(orb.shell.groups(env.USER)) do
-         if(group == ugroup and permissions % 8 > 3) then return true end
-      end
-      permissions = (permissions - (permissions % 8)) / 8
-      return permissions % 8 > 3
+   readable = function(f, filename, env)
+      local user, group = orb.fs.owner(f, filename, env)
+      return user == env.USER or orb.shell.in_group(f, env.USER, group)
+   end,
+
+   writeable = function(f, filename, env)
+      local user, group, group_write = orb.fs.owner(f, filename, env)
+      return user == env.USER or
+         (group_write and orb.shell.in_group(f, env.USER, group))
    end,
 }

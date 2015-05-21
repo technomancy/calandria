@@ -110,6 +110,7 @@ separately.
 * [x] smash (bash-like)
 * [ ] chmod
 * [ ] chown
+* [ ] chgrp
 * [ ] an editor (hoooo boy this is gonna be fun!)
 * [ ] man
 * [ ] mail
@@ -126,8 +127,10 @@ Other shell features
 * [ ] enforce access controls in the filesystem
 * [ ] globs
 * [ ] env var interpolation
+* [ ] input/output redirection, pipes
 * [ ] quoting in shell args
 * [ ] pre-emptive multitasking (see [this thread](https://forum.minetest.net/viewtopic.php?f=47&t=10185) for implementation ideas)
+* [ ] /proc nodes for exposing connected digiline peripherals
 
 ### Security
 
