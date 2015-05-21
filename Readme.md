@@ -124,7 +124,7 @@ separately.
 Other shell features
 
 * [x] sandbox scripts (limited api access)
-* [ ] enforce access controls in the filesystem
+* [x] enforce access controls in the filesystem
 * [ ] globs
 * [ ] env var interpolation
 * [ ] input/output redirection, pipes

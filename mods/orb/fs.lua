@@ -6,7 +6,7 @@ orb.fs = {
 
    mkdir = function(f, path, env)
       local dir, base = orb.fs.dirname(path)
-      local parent = orb.fs.find(f, dir, env) or f
+      local parent = f[orb.fs.normalize(dir, env and env.CWD)]
       if(not parent) then orb.fs.mkdir(f, dir, env) end
       if(parent[base]) then return parent[base] end
       parent[base] = {
@@ -25,7 +25,7 @@ orb.fs = {
 
    add_to_group = function(f, user, group)
       assert(type(user) == "string" and type(group) == "string")
-      local group_dir = orb.fs.find(f, "/etc/groups/" .. group)
+      local group_dir = f[orb.fs.normalize("/etc/groups/" .. group)]
       if(not group_dir) then
          group_dir = orb.fs.mkdir(f, "/etc/groups/" .. group)
          group_dir._user = user
@@ -37,19 +37,18 @@ orb.fs = {
    seed = function(f, users)
       for _,d in pairs({"/etc", "/home", "/tmp", "/bin"}) do
          orb.fs.mkdir(f, d)
+         f[d]._group = "all"
       end
+      f["/etc"]._group = "root"
       orb.fs.mkdir(f, "/etc/groups")
-      orb.fs.find(f, "/home")["_group"] = "all"
-      orb.fs.find(f, "/bin")["_group"] = "all"
-      orb.fs.find(f, "/tmp")["_group"] = "all"
-      orb.fs.find(f, "/tmp")["_group_write"] = true
+      f["/tmp"]._group_write = true
       for _,u in pairs(users) do
          local home = "/home/" .. u
          orb.fs.mkdir(f, home)
          orb.fs.add_to_group(f, u, u)
          orb.fs.add_to_group(f, u, "all")
-         orb.fs.find(f, home)["_user"] = u
-         orb.fs.find(f, home)["_group"] = u
+         f[home]._user = u
+         f[home]._group = u
       end
       for content_path, path in pairs({ls = "/bin/ls",
                                        mkdir = "/bin/mkdir",
@@ -67,26 +66,13 @@ orb.fs = {
          local path = "/" .. orb.utils.mod_dir .. "/resources/" .. content_path
 
          local file = io.open(path, "r")
-         orb.fs.find(f, "/" .. dir)[base] = file:read("*all")
+         f["/"..dir][base] = file:read("*all")
          file:close()
       end
       return f
    end,
 
-   find = function(f, path, env)
-      if(env and env.CWD) then path = orb.fs.normalize(path, env.CWD) end
-      if(path == "/") then return f end
-      path = path:gsub("/$", "")
-      local segments = orb.utils.split(path, "/")
-      local final = table.remove(segments, #segments)
-      for _,p in pairs(segments) do
-         assert(f, "Path not found: " .. path)
-         f = f[p]
-      end
-      return f[final]
-   end,
-
-   normalize = function(path,  cwd)
+   normalize = function(path, cwd)
       if(path == ".") then return cwd end
       if(not path:match("^/")) then path = cwd .. "/" .. path end
       local final = {}
@@ -100,43 +86,56 @@ orb.fs = {
       return "/" .. table.concat(final, "/")
    end,
 
-   owner = function(f, filename, env)
-      local file = orb.fs.find(f, filename, env)
-      if(type(file) == "string") then
-         file = orb.fs.find(f, filename .. "/..", env)
-      end
-      return file._user, file._group, file._group_write
+   dir_meta = function(dir)
+      return dir._user, dir._group, dir._group_write
    end,
 
-   readable = function(f, filename, user)
-      local owner, group = orb.fs.owner(f, filename)
+   readable = function(f, dir, user)
+      if(user == "root") then return true end
+      local owner, group = orb.fs.dir_meta(dir)
       return owner == user or orb.shell.in_group(f, user, group)
    end,
 
-   writeable = function(f, filename, user)
-      local owner, group, group_write = orb.fs.owner(f, filename)
+   writeable = function(f, dir, user)
+      if(user == "root") then return true end
+      local owner, group, group_write = orb.fs.dir_meta(dir)
       return owner == user or
          (group_write and orb.shell.in_group(f, user, group))
    end,
 
-   protected_fs = function(raw, user)
-      if(user == "root") then return raw end
+   proxy = function(raw, user, raw_root)
+      local descend = function(f, path, user)
+         local target = f
+         for _,d in pairs(orb.utils.split(path, "/")) do
+            if(d == "") then break end
+            -- readable here needs a fully-rooted fs
+            assert(type(target) == "string" or
+                      orb.fs.readable(raw_root, target, user),
+                   ("Not readable: " .. path))
+            target = target[d]
+         end
+         return target
+      end
+
       local f = {}
       local mt = {
          __index = function (_f, path)
-            print("Reading " ..path)
-            assert(orb.fs.readable(raw, path, user), "Not readable: " .. path)
-            local file_or_dir = raw[path]
-            if(type(file_or_dir) == "table") then
-               return orb.fs.protected_fs(file_or_dir, user)
+            local target = descend(raw, path, user)
+            if(type(target) == "table") then
+               return orb.fs.proxy(target, user, raw_root)
             else
-               return file_or_dir
+               return target
             end
          end,
 
-         __newindex = function (_f, path, content)
-            assert(orb.fs.writeable(raw, path, user), "Not writeable: " .. path)
-            raw[path] = content
+         __newindex = function (f, path, content)
+            local segments = orb.utils.split(path, "/")
+            local base = table.remove(segments, #segments)
+            local target = descend(raw, "/"..table.concat(segments,"/"), user)
+
+            assert(orb.fs.writeable(raw_root, target, user),
+                   "Not writeable: " .. path)
+            target[base] = content
          end
       }
       setmetatable(f, mt)

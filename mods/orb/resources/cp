@@ -2,6 +2,6 @@
 
 local f, env, args = ...
 local to_dir, to_base = orb.dirname(args[2])
-local target = orb.find(f, to_dir, env)
+local target = f[orb.normalize(f, env.CWD)]
 -- TODO: things end up copied into / if a relative target is used
-target[to_base] = orb.find(f, args[1], env)
+target[to_base] = f[orb.normalize(args[1], env)]

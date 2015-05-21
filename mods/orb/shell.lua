@@ -12,10 +12,10 @@ orb.shell = {
    exec = function(raw_f, env, command, out)
       local args = orb.utils.split(command, " ")
       local executable_name = table.remove(args, 1)
-      local f = orb.fs.protected_fs(raw_f, env.USER)
+      local f = orb.fs.proxy(raw_f, env.USER, raw_f)
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
-         local executable = orb.fs.find(f, d)[executable_name]
+         local executable = f[orb.fs.normalize(executable_path, env.CWD)]
          if(executable) then
             local chunk = assert(loadstring(executable))
             setfenv(chunk, orb.shell.sandbox(out))
@@ -33,7 +33,6 @@ orb.shell = {
                        dirname = orb.fs.dirname,
                        normalize = orb.fs.normalize,
                        mkdir = orb.fs.mkdir,
-                       find = orb.fs.find,
                        exec = orb.shell.exec
                      },
                pairs = pairs,
@@ -45,7 +44,7 @@ orb.shell = {
    end,
 
    groups = function(f, user)
-      local dir = orb.fs.find(f, "/etc/groups")
+      local dir = f["/etc/groups"]
       local found = {}
       for group,members in pairs(dir) do
          if(type(members) == "table" and orb.utils.includes(members, user)) then
@@ -56,8 +55,7 @@ orb.shell = {
    end,
 
    in_group = function(f, user, group)
-      local group_dir = orb.fs.find(f, "/etc/groups/" .. group)
-      if(not group_dir) then return false end
-      return group_dir[user]
+      local group_dir = f["/etc/groups/" .. group]
+      return group_dir and group_dir[user]
    end,
 }

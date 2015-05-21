@@ -3,7 +3,7 @@
 local f, env, args = ...
 local env = orb.utils.shallow_copy(env)
 
-local smashrc = orb.find(f, env.HOME .. "/.smashrc")
+local smashrc = f[env.HOME .. "/.smashrc"]
 if(smashrc) then local f = loadstring(smashrc) assert(f) return f() end
 
 while true do

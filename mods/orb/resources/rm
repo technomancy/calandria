@@ -3,6 +3,6 @@
 local f, env, args = ...
 for _,filename in pairs(args) do
    local dir, base = orb.dirname(filename)
-   -- doesn't work with a relative target in a subdir
-   orb.find(f, dir, env)[base] = nil
+   -- TODO: doesn't work with a relative target in a subdir
+   f[orb.normalize(dir, env.CWD)][base] = nil
 end

@@ -2,7 +2,7 @@
 
 local f, env, args = ...
 local target_name = orb.normalize(args[1] or env.HOME, env.CWD)
-local target = orb.find(f, target_name, env)
+local target = f[orb.normalize(target_name, env.CWD)]
 
 if(type(target) == "table") then
    env.CWD = target_name

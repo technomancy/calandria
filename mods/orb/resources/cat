@@ -1,6 +1,6 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-for _,file in pairs(args) do
-   print(orb.find(f, file, env))
+for _,filename in pairs(args) do
+   print(f[orb.normalize(filename, env.CWD)])
 end

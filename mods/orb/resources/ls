@@ -2,7 +2,7 @@
 
 local f, env, args = ...
 local dirname = args[1] or env.CWD
-local dir = orb.find(f, dirname, env)
+local dir = f[orb.normalize(dirname, env.CWD)]
 
 if(not dir) then
    print("Not found: " .. dir)

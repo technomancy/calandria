@@ -7,6 +7,7 @@ orb = {}
 orb.utils = {
    split = function(str,div)
       if(div=='') then return {str} end
+      if(div==str) then return {} end
       local pos,res = 0,{}
       for st,sp in function() return string.find(str,div,pos,true) end do
          local str = string.sub(str,pos,st-1)
@@ -51,7 +52,9 @@ dofile(orb.utils.mod_dir .. "shell.lua")
 -- interactively:
 if(arg) then
    assert(orb.utils.mod_dir ~= "", "Could not determine mod dir.")
-   f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddyberg", "zacherson"})
+   f = orb.fs.empty()
+   f1 = orb.fs.seed(orb.fs.proxy(f, "root"),
+                    {"technomancy", "buddyberg", "zacherson"})
    e0 = orb.shell.new_env("root")
    e1 = orb.shell.new_env("technomancy")
 
@@ -63,9 +66,8 @@ if(arg) then
    orb.shell.exec(f1, e1, "ls /tmp/hi")
    orb.shell.exec(f1, e0, "ls /etc")
 
-   assert(orb.fs.readable(f1, "/home/technomancy", "technomancy"))
-   assert(not orb.fs.readable(f1, "/home/notfound", "technomancy"))
-   assert(not orb.fs.readable(f1, "/home/zacherson", "technomancy"))
+   assert(orb.fs.readable(f1, f1["/home/technomancy"], "technomancy"))
+   assert(not orb.fs.readable(f1, f1["/home/zacherson"], "technomancy"))
 
    orb.shell.exec(f1, e1, "smash")
 end
