@@ -50,12 +50,13 @@ dofile(orb.utils.mod_dir .. "shell.lua")
 
 -- interactively:
 if(arg) then
+   assert(orb.utils.mod_dir ~= "", "Could not determine mod dir.")
    f1 = orb.fs.seed(orb.fs.empty(), {"technomancy", "buddyberg", "zacherson"})
    e1 = orb.shell.new_env("technomancy")
 
    local t_groups = orb.shell.groups(f1, "technomancy")
-   assert(orb.util.includes(t_group, "technomancy"))
-   assert(orb.util.includes(t_group, "all"))
+   assert(orb.utils.includes(t_groups, "technomancy"))
+   assert(orb.utils.includes(t_groups, "all"))
 
    orb.shell.exec(f1, e1, "mkdir /tmp/hi")
    orb.shell.exec(f1, e1, "ls /tmp/hi")

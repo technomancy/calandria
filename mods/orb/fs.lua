@@ -39,7 +39,6 @@ orb.fs = {
          orb.fs.mkdir(f, d)
       end
       orb.fs.mkdir(f, "/etc/groups")
-      pp(f)
       orb.fs.find(f, "/tmp")["_group"] = "all"
       orb.fs.find(f, "/tmp")["_group_write"] = true
       orb.fs.find(f, "/bin")["_group"] = "all"

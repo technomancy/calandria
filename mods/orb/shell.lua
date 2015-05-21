@@ -47,6 +47,7 @@ orb.shell = {
       local found = {}
       for group,members in pairs(dir) do
          if(type(members) == "table" and orb.utils.includes(members, user)) then
+            table.insert(found, group)
          end
       end
       return found
