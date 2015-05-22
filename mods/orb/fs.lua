@@ -64,7 +64,7 @@ orb.fs = {
       end
 
       orb.fs.mkdir(f, "/etc/groups")
-      f["/tmp"]._group_write = true
+      f["/tmp"]._group_write = "true"
 
       for _,user in pairs(users) do
          orb.fs.add_user(f, user)
@@ -164,10 +164,14 @@ orb.fs = {
             for k,v in pairs(raw) do
                if(type(v) == "string") then
                   f[k] = v
-               elseif(orb.fs.readable(raw_root, v, user)) then
+               elseif(type(v) == "table" and
+                      orb.fs.readable(raw_root, v, user)) then
                   f[k] = orb.fs.proxy(v, user, raw_root)
-               else
+               elseif(type(v) == "table") then
                   f[k] = unreadable(k, v)
+               else
+                  print("Unknown file type: " .. k)
+                  print(v)
                end
             end
             return next,f,nil

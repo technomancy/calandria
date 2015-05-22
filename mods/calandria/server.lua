@@ -2,6 +2,8 @@
 local key_for = function(p) return "p" .. p.x .. "-" .. p.y .. "-" .. p.z end
 
 calandria.server = {
+   -- TODO: restarting the server clears this, so you have to place
+   -- server blocks anew for each server cycle
    placed = {},
 
    after_place = function(pos, placer, _itemstack, _pointed)
@@ -11,7 +13,9 @@ calandria.server = {
    end,
 
    make = function(player)
-      local fs = orb.fs.seed(orb.fs.empty(), {player})
+      local f = orb.fs.empty()
+      orb.fs.seed(orb.fs.proxy(f, "root", f), {player})
+      local fs = orb.fs.proxy(f, player, f)
       local envs = {}
       local owner = player
       envs[owner] = orb.shell.new_env(owner)
@@ -31,7 +35,7 @@ calandria.server = {
       if(type(msg) == "function") then
          local value = msg()
          if not value.msg then return end
-
+         print("Executing "..value.msg)
          local server = calandria.server.placed[key_for(pos)]
          local result = server.exec(value.msg, value.player)
          digiline:receptor_send(pos, digiline.rules.default, channel, result)
