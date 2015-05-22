@@ -7,12 +7,15 @@ orb.fs = {
    mkdir = function(f, path, env)
       local dir, base = orb.fs.dirname(path)
       local parent = f[orb.fs.normalize(dir, env and env.CWD)]
+
       if(not parent) then orb.fs.mkdir(f, dir, env) end
       if(parent[base]) then return parent[base] end
+
       parent[base] = {
          _user = parent._user,
          _group = parent._group,
       }
+
       return parent[base]
    end,
 
@@ -20,18 +23,38 @@ orb.fs = {
       local t = orb.utils.split(path, "/")
       local basename = t[#t]
       table.remove(t, #t)
+
       return "/" .. table.concat(t, "/"), basename
+   end,
+
+   add_user = function(f, user)
+      local home = "/home/" .. user
+      orb.fs.mkdir(f, home)
+      orb.fs.add_to_group(f, user, user)
+      orb.fs.add_to_group(f, user, "all")
+      f[home]._user = user
+      f[home]._group = user
    end,
 
    add_to_group = function(f, user, group)
       assert(type(user) == "string" and type(group) == "string")
       local group_dir = f[orb.fs.normalize("/etc/groups/" .. group)]
+
       if(not group_dir) then
          group_dir = orb.fs.mkdir(f, "/etc/groups/" .. group)
          group_dir._user = user
       end
+
       group_dir._group = group
       group_dir[user] = user
+   end,
+
+   copy_to_fs = function(f, fs_path, real_path)
+      local dir, base = orb.fs.dirname(fs_path)
+      local path = "/" .. orb.mod_dir .. "/resources/" .. real_path
+      local file = io.open(path, "r")
+      f["/"..dir][base] = file:read("*all")
+      file:close()
    end,
 
    seed = function(f, users)
@@ -39,17 +62,15 @@ orb.fs = {
          orb.fs.mkdir(f, d)
          f[d]._group = "all"
       end
+
       orb.fs.mkdir(f, "/etc/groups")
       f["/tmp"]._group_write = true
-      for _,u in pairs(users) do
-         local home = "/home/" .. u
-         orb.fs.mkdir(f, home)
-         orb.fs.add_to_group(f, u, u)
-         orb.fs.add_to_group(f, u, "all")
-         f[home]._user = u
-         f[home]._group = u
+
+      for _,user in pairs(users) do
+         orb.fs.add_user(f, user)
       end
-      for content_path, path in pairs({ls = "/bin/ls",
+
+      for real_path, fs_path in pairs({ls = "/bin/ls",
                                        mkdir = "/bin/mkdir",
                                        cd = "/bin/cd",
                                        cat = "/bin/cat",
@@ -59,14 +80,8 @@ orb.fs = {
                                        rm = "/bin/rm",
                                        echo = "/bin/echo",
                                        smash = "/bin/smash",
-                                       export = "/bin/export",
-      }) do
-         local dir, base = orb.fs.dirname(path)
-         local path = "/" .. orb.mod_dir .. "/resources/" .. content_path
-
-         local file = io.open(path, "r")
-         f["/"..dir][base] = file:read("*all")
-         file:close()
+                                       export = "/bin/export",}) do
+         orb.fs.copy_to_fs(f, fs_path, real_path)
       end
       return f
    end,
@@ -74,6 +89,7 @@ orb.fs = {
    normalize = function(path, cwd)
       if(path == ".") then return cwd end
       if(not path:match("^/")) then path = cwd .. "/" .. path end
+
       local final = {}
       for _,segment in pairs(orb.utils.split(path, "/")) do
          if(segment == "..") then
@@ -82,6 +98,7 @@ orb.fs = {
             final[#final + 1] = segment
          end
       end
+
       return "/" .. table.concat(final, "/")
    end,
 
@@ -107,7 +124,7 @@ orb.fs = {
          local target = f
          for _,d in pairs(orb.utils.split(path, "/")) do
             if(d == "") then break end
-            -- readable here needs a fully-rooted fs
+            -- readable here needs a fully-rooted fs to read groups
             assert(type(target) == "string" or
                       orb.fs.readable(raw_root, target, user),
                    ("Not readable: " .. path .. " d: " .. d))
