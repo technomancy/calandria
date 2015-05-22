@@ -54,7 +54,7 @@ orb.shell = {
    end,
 
    in_group = function(f, user, group)
-      local group_dir = f["/etc/groups/" .. group]
+      local group_dir = f.etc.groups[group]
       return group_dir and group_dir[user]
    end,
 }

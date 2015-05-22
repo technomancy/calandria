@@ -36,6 +36,7 @@ orb.utils = {
       for _,x in orb.utils.mtpairs(tab) do
          if(x == val) then return true end
       end
+      return false
    end,
 
    mtpairs = function(tab)

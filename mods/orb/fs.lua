@@ -110,10 +110,14 @@ orb.fs = {
             -- readable here needs a fully-rooted fs
             assert(type(target) == "string" or
                       orb.fs.readable(raw_root, target, user),
-                   ("Not readable: " .. path .. " d: " .. target._group))
+                   ("Not readable: " .. path .. " d: " .. d))
             target = target[d]
          end
          return target
+      end
+
+      local unreadable = function(_k,v)
+         return {_user = v._user, _group = v._group}
       end
 
       local f = {}
@@ -137,9 +141,19 @@ orb.fs = {
             target[base] = content
          end,
 
-         -- TODO: if getmetatable is callable in the sandbox, it's all over
          __iterator = function(_f)
-            return pairs(raw)
+            assert(orb.fs.readable(raw_root, raw, user))
+            local f = {}
+            for k,v in pairs(raw) do
+               if(type(v) == "string") then
+                  f[k] = v
+               elseif(orb.fs.readable(raw_root, v, user)) then
+                  f[k] = orb.fs.proxy(v, user, raw_root)
+               else
+                  f[k] = unreadable(k, v)
+               end
+            end
+            return next,f,nil
          end,
       }
       setmetatable(f, mt)
