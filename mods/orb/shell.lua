@@ -9,10 +9,9 @@ orb.shell = {
       }
    end,
 
-   exec = function(raw_f, env, command, out)
+   exec = function(f, env, command, out)
       local args = orb.utils.split(command, " ")
       local executable_name = table.remove(args, 1)
-      local f = orb.fs.proxy(raw_f, env.USER, raw_f)
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
          local executable = f[orb.fs.normalize(executable_path, env.CWD)]
@@ -35,7 +34,7 @@ orb.shell = {
                        mkdir = orb.fs.mkdir,
                        exec = orb.shell.exec
                      },
-               pairs = pairs,
+               pairs = orb.utils.mtpairs,
                print = printer,
                io = { write = io.write, read = io.read },
                type = type,
@@ -46,7 +45,7 @@ orb.shell = {
    groups = function(f, user)
       local dir = f["/etc/groups"]
       local found = {}
-      for group,members in pairs(dir) do
+      for group,members in orb.utils.mtpairs(dir) do
          if(type(members) == "table" and orb.utils.includes(members, user)) then
             table.insert(found, group)
          end

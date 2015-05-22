@@ -39,7 +39,6 @@ orb.fs = {
          orb.fs.mkdir(f, d)
          f[d]._group = "all"
       end
-      f["/etc"]._group = "root"
       orb.fs.mkdir(f, "/etc/groups")
       f["/tmp"]._group_write = true
       for _,u in pairs(users) do
@@ -63,7 +62,7 @@ orb.fs = {
                                        export = "/bin/export",
       }) do
          local dir, base = orb.fs.dirname(path)
-         local path = "/" .. orb.utils.mod_dir .. "/resources/" .. content_path
+         local path = "/" .. orb.mod_dir .. "/resources/" .. content_path
 
          local file = io.open(path, "r")
          f["/"..dir][base] = file:read("*all")
@@ -111,7 +110,7 @@ orb.fs = {
             -- readable here needs a fully-rooted fs
             assert(type(target) == "string" or
                       orb.fs.readable(raw_root, target, user),
-                   ("Not readable: " .. path))
+                   ("Not readable: " .. path .. " d: " .. target._group))
             target = target[d]
          end
          return target
@@ -119,7 +118,7 @@ orb.fs = {
 
       local f = {}
       local mt = {
-         __index = function (_f, path)
+         __index = function(_f, path)
             local target = descend(raw, path, user)
             if(type(target) == "table") then
                return orb.fs.proxy(target, user, raw_root)
@@ -128,7 +127,7 @@ orb.fs = {
             end
          end,
 
-         __newindex = function (f, path, content)
+         __newindex = function(f, path, content)
             local segments = orb.utils.split(path, "/")
             local base = table.remove(segments, #segments)
             local target = descend(raw, "/"..table.concat(segments,"/"), user)
@@ -136,7 +135,12 @@ orb.fs = {
             assert(orb.fs.writeable(raw_root, target, user),
                    "Not writeable: " .. path)
             target[base] = content
-         end
+         end,
+
+         -- TODO: if getmetatable is callable in the sandbox, it's all over
+         __iterator = function(_f)
+            return pairs(raw)
+         end,
       }
       setmetatable(f, mt)
       return f
