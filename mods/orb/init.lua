@@ -19,11 +19,14 @@ if(arg) then
    e0 = orb.shell.new_env("root")
    e1 = orb.shell.new_env("technomancy")
 
+   orb.shell.exec(f1, e1, "smash")
+
    t_groups = orb.shell.groups(f0, "technomancy")
    assert(orb.utils.includes(t_groups, "technomancy"))
    assert(orb.utils.includes(t_groups, "all"))
    assert(not orb.utils.includes(t_groups, "zacherson"))
 
+   orb.shell.exec(f1, e1, "mkdir mydir")
    orb.shell.exec(f1, e1, "mkdir /tmp/hi")
    orb.shell.exec(f1, e1, "ls /tmp/hi")
    orb.shell.exec(f1, e0, "ls /etc")
@@ -31,7 +34,10 @@ if(arg) then
    assert(orb.fs.readable(f0, f1["/home/technomancy"], "technomancy"))
    assert(orb.fs.readable(f0, f1["/bin"], "technomancy"))
    assert(orb.fs.readable(f0, f1["/bin"], "zacherson"))
-   -- assert(not orb.fs.readable(f0, f1["/home/zacherson"], "technomancy"))
+   assert(orb.fs.writeable(f0, f1["/home/technomancy"], "technomancy"))
+   assert(orb.fs.writeable(f0, f1["/tmp"], "technomancy"))
 
-   orb.shell.exec(f1, e1, "smash")
+   -- assert(not orb.fs.writeable(f0, f1["/etc"], "technomancy"))
+   -- assert(not orb.fs.writeable(f0, f1["/home/zacherson"], "technomancy"))
+   -- assert(not orb.fs.readable(f0, f1["/home/zacherson"], "technomancy"))
 end

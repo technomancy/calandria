@@ -21,7 +21,11 @@ orb.shell = {
             return chunk(f, env, args)
          end
       end
-      print(executable_name .. " not found.")
+      error(executable_name .. " not found.")
+   end,
+
+   pcall = function(f, env, command, out)
+      return pcall(function() orb.shell.exec(f, env, command, out) end)
    end,
 
    sandbox = function(out)
@@ -32,7 +36,8 @@ orb.shell = {
                        dirname = orb.fs.dirname,
                        normalize = orb.fs.normalize,
                        mkdir = orb.fs.mkdir,
-                       exec = orb.shell.exec
+                       exec = orb.shell.exec,
+                       pcall = orb.shell.pcall,
                      },
                pairs = orb.utils.mtpairs,
                print = printer,

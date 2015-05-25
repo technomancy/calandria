@@ -159,7 +159,7 @@ orb.fs = {
          end,
 
          __iterator = function(_f)
-            assert(orb.fs.readable(raw_root, raw, user))
+            assert(orb.fs.readable(raw_root, raw, user), "Not readable")
             local f = {}
             for k,v in pairs(raw) do
                if(type(v) == "string") then
