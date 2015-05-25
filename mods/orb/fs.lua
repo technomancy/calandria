@@ -80,7 +80,11 @@ orb.fs = {
                                        rm = "/bin/rm",
                                        echo = "/bin/echo",
                                        smash = "/bin/smash",
-                                       export = "/bin/export",}) do
+                                       export = "/bin/export",
+                                       chmod = "/bin/chmod",
+                                       chgrp = "/bin/chgrp",
+                                       chown = "/bin/chown",
+      }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end
       return f
