@@ -25,7 +25,7 @@ orb.shell = {
       error(executable_name .. " not found.")
    end,
 
-   pcall = function(f, env, command)
+   pexec = function(f, env, command)
       return pcall(function() orb.shell.exec(f, env, command) end)
    end,
 
@@ -38,10 +38,10 @@ orb.shell = {
                        normalize = orb.fs.normalize,
                        mkdir = orb.fs.mkdir,
                        exec = orb.shell.exec,
-                       pcall = orb.shell.pcall,
+                       pexec = orb.shell.pexec,
                      },
                pairs = orb.utils.mtpairs,
-               print = print, -- function(...) write(... .. "\n") end,
+               print = function(...) write(... .. "\n") end,
                coroutine = { yield = coroutine.yield },
                io = { write = write, read = read },
                type = type,

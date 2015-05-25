@@ -11,7 +11,7 @@ while true do
    local input = io.read()
    if not input or input == "exit" or input == "logout" then return end
 
-   local success, msg = orb.pcall(f, env, input)
+   local success, msg = orb.pexec(f, env, input)
    if(not success) then
       print(msg)
       env.LAST_ERROR = msg

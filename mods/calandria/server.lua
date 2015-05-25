@@ -13,20 +13,18 @@ calandria.server = {
       orb.fs.seed(orb.fs.proxy(f_root, "root", f_root), {player})
       local fs = orb.fs.proxy(f_root, player, f_root)
 
-      return { fs = fs, sessions = {} }
+      return { fs = fs, sessions = {}, processes = {} }
    end,
 
    session = function(pos, server, player, channel)
       local env = orb.shell.new_env(player)
       local buffer = {}
       env.write = function(output)
-         -- TODO: this crashes: attempt to yield across C-call boundary
-         -- coroutine.yield()
+         coroutine.yield()
          digiline:receptor_send(pos, digiline.rules.default, channel, output)
       end
       env.read = function()
-         -- without this, the smash shell will block forever, yaaaaay
-         -- while #buffer == 0 do coroutine.yield() end
+         while #buffer == 0 do coroutine.yield() end
          return table.remove(buffer)
       end
       env.buffer_input = function(x)
@@ -46,9 +44,11 @@ calandria.server = {
          if(value.code == "init") then
             local env = calandria.server.session(pos, server, player, channel)
             local fs = orb.fs.proxy(server.fs, player, server.fs)
-            orb.shell.exec(fs, env, "smash")
+            local co = coroutine.create(function()
+                  orb.shell.exec(fs, env, "smash") end)
+            table.insert(server.processes, co)
+            coroutine.resume(co)
          elseif value.msg and value.msg ~= "" then
-            print("Received: "..value.msg)
             server.sessions[player].buffer_input(value.msg)
          end
       end
@@ -60,7 +60,8 @@ calandria.server = {
       local file = io.open(calandria.server.path, "r")
       if(file) then
          for k,v in pairs(minetest.deserialize(file:read("*all"))) do
-            placed[k] = { fs = v, sessions = {} }
+            print("Loading server "..k)
+            calandria.server.placed[k] = { fs = v, sessions = {}, processes = {} }
          end
          file:close()
       else
@@ -71,11 +72,23 @@ calandria.server = {
    save = function()
       local file = io.open(calandria.server.path, "w")
       local filesystems = {}
-      for k,v in pairs(placed) do
+      for k,v in pairs(calandria.server.placed) do
+         print("Saving server"..k)
+         for fn,v2 in pairs(v.fs) do
+            print(fn)
+            print(v2)
+         end
          filesystems[k] = v.fs
       end
       file:write(minetest.serialize(filesystems))
       file:close()
+   end,
+
+   scheduler = function(pos, node, _active_object_count, _wider)
+      local server = calandria.server.placed[key_for(pos)]
+      for _,p in pairs(server.processes) do
+         coroutine.resume(p)
+      end
    end,
 }
 
@@ -108,4 +121,11 @@ minetest.register_node("calandria:server", {
                           after_place_node = calandria.server.after_place
                           -- TODO: remove on destruct
                           -- TODO: digiterms need to send destruct messages too
+})
+
+minetest.register_abm({
+      nodenames = {"calandria:server"},
+      interval = 1,
+      chance = 1,
+      action = calandria.server.scheduler,
 })
