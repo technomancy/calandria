@@ -6,10 +6,11 @@ orb.shell = {
       -- TODO: protected env: shouldn't be allowed to change USER
       return { PATH = "/bin", PROMPT = "${CWD} $ ", SHELL = "/bin/smash",
                CWD = home, HOME = home, USER = user,
+               read = io.read, write = io.write
       }
    end,
 
-   exec = function(f, env, command, out)
+   exec = function(f, env, command)
       local args = orb.utils.split(command, " ")
       local executable_name = table.remove(args, 1)
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
@@ -17,20 +18,20 @@ orb.shell = {
          local executable = f[orb.fs.normalize(executable_path, env.CWD)]
          if(executable) then
             local chunk = assert(loadstring(executable))
-            setfenv(chunk, orb.shell.sandbox(out))
+            setfenv(chunk, orb.shell.sandbox(env))
             return chunk(f, env, args)
          end
       end
       error(executable_name .. " not found.")
    end,
 
-   pcall = function(f, env, command, out)
-      return pcall(function() orb.shell.exec(f, env, command, out) end)
+   pcall = function(f, env, command)
+      return pcall(function() orb.shell.exec(f, env, command) end)
    end,
 
-   sandbox = function(out)
-      local printer = print
-      if(out) then printer = function(str) table.insert(out, str) end end
+   sandbox = function(env)
+      local read = function(...) return env.read(...) end
+      local write = function(...) return env.write(...) end
 
       return { orb = { utils = orb.utils,
                        dirname = orb.fs.dirname,
@@ -40,8 +41,8 @@ orb.shell = {
                        pcall = orb.shell.pcall,
                      },
                pairs = orb.utils.mtpairs,
-               print = printer,
-               io = { write = io.write, read = io.read },
+               print = function(...) write(... .. "\n") end,
+               io = { write = write, read = read },
                type = type,
                table = { concat = table.concat },
       }

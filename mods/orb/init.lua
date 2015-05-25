@@ -18,6 +18,8 @@ if(arg) then
    f1 = orb.fs.proxy(f, "technomancy", f)
    e0 = orb.shell.new_env("root")
    e1 = orb.shell.new_env("technomancy")
+   e1.write = io.write -- or what have you
+   e1.read = io.read
 
    orb.shell.exec(f1, e1, "smash")
 

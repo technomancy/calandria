@@ -7,7 +7,6 @@ calandria.server = {
    placed = {},
 
    after_place = function(pos, placer, _itemstack, _pointed)
-      -- TODO: determine channel somehow
       calandria.server.placed[key_for(pos)] =
          calandria.server.make(placer:get_player_name())
    end,
@@ -25,9 +24,10 @@ calandria.server = {
             if(not envs[player]) then return "No account on this server." end
 
             local out = {}
-            orb.shell.exec(fs, envs[player], input, out)
+            envs[player].write = function(x) table.insert(out, #out) end
+            orb.shell.exec(fs, envs[player], input)
             return "$ " .. input .. "\n" .. table.concat(out, "\n") .. "\n\n"
-         end
+         end,
       }
    end,
 
