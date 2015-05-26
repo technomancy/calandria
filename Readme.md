@@ -131,7 +131,9 @@ Other shell features
 * [ ] pre-emptive multitasking (see [this thread](https://forum.minetest.net/viewtopic.php?f=47&t=10185) for implementation ideas)
 * [ ] /proc nodes for exposing connected digiline peripherals
 
+* [ ] more of the built-in scripts should take multiple target arguments
 * [ ] an editor (hoooo boy this is gonna be fun!)
+* [ ] user passwords
 
 Until we get an actual xterm with character input, we are probably
 stuck with using a separate block for a (somewhat lame) editor.
@@ -149,6 +151,47 @@ exposes the nodes for which the user has access?
 
 Private and public keys are inventory items. Placing a public key in a
 server inventory will allow the holder of the private key to log on.
+
+### Differences from Unix
+
+The OS is an attempt at being unix-like; however, it varies in several
+ways. Some of them are due to conceptual simplification; some are in
+order to have an easier time implementing it given the target
+platform, and some are due to oversight/mistakes or unfinished features.
+
+The biggest difference is that of permissions. In this system,
+permissions only belong to directories, and files are simply subject
+to the permissions of the directory containing them. In addition, the
+[octal permissions](https://en.wikipedia.org/wiki/File_system_permissions#Notation_of_traditional_Unix_permissions)
+of unix are collapsed into a single `group_write` bit. It's assumed
+that the directory's owner always has full read-write access and that
+members of the group always have read access. The `chown` and `chgrp`
+commands work similarly as to unix, but `chmod` simply takes a `+` or
+`-` argument to enable or disable group write. Group membership is
+indicated simply by an entry in the `/etc/groups/$GROUP` directory
+named after the username.
+
+Rather than traditional stdio, here we have input and output modeled
+as `read` and `write` functions inside the environment table. There is
+no stderr. Due to limitations in the engine, there is no
+character-by-character IO; it is only full strings (usually a whole
+line) at a time that are passed to `write` or returned from
+`read`. The sandbox in which scripts run have `print`, `io.write`, and
+`io.read` redefined to these functions; when a session is initiated
+over digilines it's up to the node definition to set `read` and
+`write` in the environment to functions which move the data to and
+from digiline channels.
+
+Of course, all scripts are written in Lua. Filesystem, the environment
+table, and CLI args are exposed as `...`, so scripts typically start
+with `local f, env, args = ...`. Filesystem access is simply table
+access, though the table you're given is a proxy table that enforces
+permissions with Lua metamethods.
+
+Servers can have multiple processes running at once, but the shell
+does not support multiplexing, so this is only possible through
+connecting multiple terminals to a single server. TODO: expose process
+table in `/proc`
 
 ## Blocks
 
