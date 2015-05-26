@@ -1,5 +1,0 @@
--- -*- lua -*-
-
-local f, env, args = ...
-local kv = orb.utils.split(args[1], "=")
-env[kv[1]] = kv[2]

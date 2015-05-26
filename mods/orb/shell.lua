@@ -10,9 +10,18 @@ orb.shell = {
       }
    end,
 
+   parse = function(f, command)
+      local tokens = orb.utils.split(command, " ")
+      local executable_name = table.remove(tokens, 1)
+      return executable_name, tokens, input, output
+   end,
+
    exec = function(f, env, command)
-      local args = orb.utils.split(command, " ")
-      local executable_name = table.remove(args, 1)
+      local executable_name, args, read, write = orb.shell.parse(f, command)
+      local env = orb.utils.shallow_copy(env)
+      -- env.read = read
+      -- env.write = write
+
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
          local executable = f[orb.fs.normalize(executable_path, env.CWD)]

@@ -25,7 +25,7 @@ calandria.server = {
       end
       env.read = function()
          while #buffer == 0 do coroutine.yield() end
-         return table.remove(buffer)
+         return table.remove(buffer, 1)
       end
       env.buffer_input = function(x)
          table.insert(buffer, x)
