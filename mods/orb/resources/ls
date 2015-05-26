@@ -11,6 +11,10 @@ elseif(type(dir) == "table") then
       if(not name:match("^_")) then
          if(type(contents) == "table") then
             print(name .. "/")
+         elseif(type(contents) == "function") then
+            print("*" .. name)
+         elseif(type(contents) == "thread") then
+            print("%" .. name)
          else
             print(name)
          end

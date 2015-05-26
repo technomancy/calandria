@@ -72,7 +72,6 @@ orb.fs = {
 
       for real_path, fs_path in pairs({ls = "/bin/ls",
                                        mkdir = "/bin/mkdir",
-                                       cd = "/bin/cd",
                                        cat = "/bin/cat",
                                        env = "/bin/env",
                                        mv = "/bin/mv",

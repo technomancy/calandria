@@ -12,7 +12,14 @@ while true do
    if not input or input == "exit" or input == "logout" then return end
 
    local var, value = input:match("export (.+)=(.*)")
-   if(var) then
+   local change_dir = input:match("cd +(.+)")
+
+   -- inlining primitives this way is kinda tacky
+   if(input == "cd") then
+      env.CWD = env.HOME
+   elseif(change_dir) then
+      env.CWD = orb.normalize(change_dir, env.CWD)
+   elseif(var) then
       env[var] = value
    else
       local success, msg = orb.pexec(f, env, input)

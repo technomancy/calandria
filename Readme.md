@@ -138,20 +138,6 @@ Other shell features
 Until we get an actual xterm with character input, we are probably
 stuck with using a separate block for a (somewhat lame) editor.
 
-### Security
-
-Need to sandbox in orb.shell.exec, but this still causes problems as
-the env table can be modified. Do we send a copy of this table to
-scripts? Then export needs to become a primitive. (which it is in bash
-anyway, nbd.)
-
-Then there's the question of reading, writing, and executing with the
-filesystem. Maybe scripts need a wrapped copy of the fs which only
-exposes the nodes for which the user has access?
-
-Private and public keys are inventory items. Placing a public key in a
-server inventory will allow the holder of the private key to log on.
-
 ### Differences from Unix
 
 The OS is an attempt at being unix-like; however, it varies in several
