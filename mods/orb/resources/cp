@@ -1,7 +1,6 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-local to_dir, to_base = orb.dirname(args[2])
-local target = f[orb.normalize(to_dir, env.CWD)]
--- TODO: things end up copied into / if a relative target is used
-target[to_base] = f[orb.normalize(args[1], env.CWD)]
+local to_dir, to_base = orb.dirname(orb.normalize(args[2], env.CWD))
+
+f[to_dir][to_base] = f[orb.normalize(args[1], env.CWD)]
