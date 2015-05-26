@@ -23,7 +23,9 @@ if(arg) then
    e1 = orb.shell.new_env("technomancy")
 
    co = orb.process.spawn(f1, e1, "smash") -- Open an interactive shell
-   coroutine.resume(co)
+   -- till we have non-blocking io.read, the scheduler isn't going to do jack
+   -- when run from regular stdin
+   while coroutine.status(co) ~= "dead" do orb.process.scheduler(f) end
 
    -- tests
    t_groups = orb.shell.groups(f0, "technomancy")

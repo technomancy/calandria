@@ -87,7 +87,8 @@ orb.fs = {
                                        chmod = "/bin/chmod",
                                        chgrp = "/bin/chgrp",
                                        chown = "/bin/chown",
-                                       ps = "/bin/ps"
+                                       ps = "/bin/ps",
+                                       grep = "/bin/grep",
       }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end

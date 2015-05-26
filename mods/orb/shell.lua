@@ -6,6 +6,8 @@ orb.shell = {
       -- TODO: protected env: shouldn't be allowed to change USER
       return { PATH = "/bin", PROMPT = "${CWD} $ ", SHELL = "/bin/smash",
                CWD = home, HOME = home, USER = user,
+               -- TODO: need a non-blocking read; look into posix.rpoll
+               -- https://luaposix.github.io/luaposix/modules/posix.poll.html
                read = io.read, write = io.write
       }
    end,
@@ -40,22 +42,18 @@ orb.shell = {
                dir[base] = contents
             end
             break
-         -- elseif(t == "|") then
-         --    local env2 = orb.utils.shallow_copy(env)
-         --    local buffer = {}
-         --    local process = coroutine.create(function()
-         --          orb.shell.exec(f, env2, table.concat(tokens, " ")) end)
-         --    env2.read = function()
-         --       while #buffer == 0 do coroutine.yield() end
-         --       return table.remove(buffer, 1)
-         --    end
-         --    env.write = function(output)
-         --       table.insert(buffer, output)
-         --       coroutine.yield()
-         --    end
-         --    -- TODO: needs a proper process table
-         --    f["/proc/" .. process.id] = process
-         --    break
+         elseif(t == "|") then
+            local env2 = orb.utils.shallow_copy(env)
+            local buffer = {}
+            env2.read = function()
+               while #buffer == 0 do coroutine.yield() end
+               return table.remove(buffer, 1)
+            end
+            env.write = function(output)
+               table.insert(buffer, output)
+            end
+            local co = orb.process.spawn(f, env, table.concat(tokens, " "))
+            break
          else
             table.insert(args, t)
          end

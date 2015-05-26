@@ -16,13 +16,16 @@ orb.process = {
    end,
 
    scheduler = function(f)
-      for _,u in pairs(f.proc) do
-         for k,p in pairs(u) do
-            if(type(p) == "table" and p.thread) then
-               if(coroutine.status(p.thread) == "dead") then
-                  table.remove(u, k)
-               else
-                  coroutine.resume(p.thread)
+      for u,procs in pairs(f.proc) do
+         if(type(procs) == "table") then
+            for k,p in pairs(procs) do
+               if(type(p) == "table" and p.thread) then
+                  if(coroutine.status(p.thread) == "dead") then
+                     table.remove(procs, k)
+                  else
+                     -- print("Resuming "..p.command)
+                     coroutine.resume(p.thread)
+                  end
                end
             end
          end

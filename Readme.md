@@ -31,9 +31,8 @@ the robot.
 
 The ship is powered by a main power reactor with a backup solar array
 for auxiliary power. There are a number of decks. Each deck will have
-conduits running under it for bringing power to the various
-systems. Normally you would travel between decks with the elevators,
-but with main power offline you would need to climb ladders in shafts.
+conduits running under it for bringing power and data channels to the
+various systems.
 
 Some areas of the ship have oxygen, but some are depressurized. The
 robot can repair the hull breaches, and the oxygen system can pump
@@ -110,6 +109,7 @@ separately.
 * [x] chown
 * [x] chgrp
 * [x] ps
+* [x] grep
 * [ ] man
 * [ ] mail
 * [ ] ssh
