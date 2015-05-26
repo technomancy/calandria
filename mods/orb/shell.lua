@@ -23,7 +23,7 @@ orb.shell = {
             break
          elseif(t == ">") then
             local target = table.remove(tokens, 1)
-            local dirname, base = orb.fs.dirname(target, env.CWD)
+            local dirname, base = orb.fs.dirname(orb.fs.normalize(target, env.CWD))
             local dir = f[dirname]
             local contents = ""
             env.write = function(output)
@@ -32,7 +32,7 @@ orb.shell = {
             end
             break
          elseif(t == ">>") then
-            local dirname, base = orb.fs.dirname(tokens[1], env.CWD)
+            local dirname, base = orb.fs.dirname(orb.fs.normalize(target, env.CWD))
             local dir = f[dirname]
             local contents = dir[base] or ""
             env.write = function(output)

@@ -1,4 +1,4 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-print(table.concat(args, " "))
+io.write(table.concat(args, " "))

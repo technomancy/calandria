@@ -2,5 +2,5 @@
 
 local f, env, args = ...
 for _,filename in pairs(args) do
-   print(f[orb.normalize(filename, env.CWD)])
+   io.write(f[orb.normalize(filename, env.CWD)])
 end
