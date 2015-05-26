@@ -80,7 +80,6 @@ orb.fs = {
                                        rm = "/bin/rm",
                                        echo = "/bin/echo",
                                        smash = "/bin/smash",
-                                       export = "/bin/export",
                                        chmod = "/bin/chmod",
                                        chgrp = "/bin/chgrp",
                                        chown = "/bin/chown",

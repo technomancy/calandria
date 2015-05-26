@@ -10,17 +10,63 @@ orb.shell = {
       }
    end,
 
-   parse = function(f, command)
-      local tokens = orb.utils.split(command, " ")
+   parse = function(f, env, command)
+      local args = {}
+      local tokens = orb.utils.split(command, " +")
       local executable_name = table.remove(tokens, 1)
-      return executable_name, tokens, input, output
+      local t = table.remove(tokens, 1)
+      while t do
+         if(t == "<") then
+            local file = f[orb.fs.normalize(tokens[1], env.CWD)]
+            local lines = orb.utils.split(file, "\n")
+            env.read = function() return table.remove(lines, 1) end
+            break
+         elseif(t == ">") then
+            local target = table.remove(tokens, 1)
+            local dirname, base = orb.fs.dirname(target, env.CWD)
+            local dir = f[dirname]
+            local contents = ""
+            env.write = function(output)
+               contents = contents .. output
+               dir[base] = contents
+            end
+            break
+         elseif(t == ">>") then
+            local dirname, base = orb.fs.dirname(tokens[1], env.CWD)
+            local dir = f[dirname]
+            local contents = dir[base] or ""
+            env.write = function(output)
+               contents = contents .. output
+               dir[base] = contents
+            end
+            break
+         -- elseif(t == "|") then
+         --    local env2 = orb.utils.shallow_copy(env)
+         --    local buffer = {}
+         --    local process = coroutine.create(function()
+         --          orb.shell.exec(f, env2, table.concat(tokens, " ")) end)
+         --    env2.read = function()
+         --       while #buffer == 0 do coroutine.yield() end
+         --       return table.remove(buffer, 1)
+         --    end
+         --    env.write = function(output)
+         --       table.insert(buffer, output)
+         --       coroutine.yield()
+         --    end
+         --    -- TODO: needs a proper process table
+         --    f["/proc/" .. process.id] = process
+         --    break
+         else
+            table.insert(args, t)
+         end
+         t = table.remove(tokens, 1)
+      end
+      return executable_name, args
    end,
 
    exec = function(f, env, command)
-      local executable_name, args, read, write = orb.shell.parse(f, command)
       local env = orb.utils.shallow_copy(env)
-      -- env.read = read
-      -- env.write = write
+      local executable_name, args = orb.shell.parse(f, env, command)
 
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
@@ -50,7 +96,9 @@ orb.shell = {
                        pexec = orb.shell.pexec,
                      },
                pairs = orb.utils.mtpairs,
-               print = function(...) write(... .. "\n") end,
+               print = function(...)
+                  -- print(...)
+                  write(tostring(...)) write("\n") end,
                coroutine = { yield = coroutine.yield },
                io = { write = write, read = read },
                type = type,

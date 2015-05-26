@@ -5,7 +5,7 @@ orb.utils = {
       if(div=='') then return {str} end
       if(div==str) then return {} end
       local pos,res = 0,{}
-      for st,sp in function() return string.find(str,div,pos,true) end do
+      for st,sp in function() return str:find(div,pos) end do
          local str = string.sub(str,pos,st-1)
          if(str ~= "") then table.insert(res,str) end
          pos = sp + 1
