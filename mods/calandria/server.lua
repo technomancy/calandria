@@ -13,7 +13,7 @@ calandria.server = {
       orb.fs.seed(orb.fs.proxy(f_root, "root", f_root), {player})
       local fs = orb.fs.proxy(f_root, player, f_root)
 
-      return { fs = fs, sessions = {}, processes = {} }
+      return { fs = fs, sessions = {} }
    end,
 
    session = function(pos, server, player, channel)
@@ -44,10 +44,7 @@ calandria.server = {
          if(value.code == "init") then
             local env = calandria.server.session(pos, server, player, channel)
             local fs = orb.fs.proxy(server.fs, player, server.fs)
-            local co = coroutine.create(function()
-                  orb.shell.exec(fs, env, "smash") end)
-            table.insert(server.processes, co)
-            coroutine.resume(co)
+            local co = orb.process.spawn(fs, env, "smash")
          elseif value.msg and value.msg ~= "" then
             server.sessions[player].buffer_input(value.msg)
          end
@@ -61,7 +58,7 @@ calandria.server = {
       if(file) then
          for k,v in pairs(minetest.deserialize(file:read("*all"))) do
             print("Loading server "..k)
-            calandria.server.placed[k] = { fs = v, sessions = {}, processes = {} }
+            calandria.server.placed[k] = { fs = v, sessions = {} }
          end
          file:close()
       else
@@ -86,9 +83,7 @@ calandria.server = {
 
    scheduler = function(pos, node, _active_object_count, _wider)
       local server = calandria.server.placed[key_for(pos)]
-      for _,p in pairs(server.processes) do
-         coroutine.resume(p)
-      end
+      orb.process.scheduler(server.fs)
    end,
 }
 

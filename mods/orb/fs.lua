@@ -1,7 +1,9 @@
 -- fake lil filesystem
 orb.fs = {
    empty = function()
-      return {_user = "root", _group = "all"}
+      return {_user = "root", _group = "all", proc = {
+                 _user = "root", _group = "all"
+      }}
    end,
 
    mkdir = function(f, path, env)
@@ -34,6 +36,9 @@ orb.fs = {
       orb.fs.add_to_group(f, user, "all")
       f[home]._user = user
       f[home]._group = user
+      orb.fs.mkdir(f, "/proc/" .. user)
+      f["/proc/" .. user]._user = user
+      f["/proc/" .. user]._group = user
    end,
 
    add_to_group = function(f, user, group)
@@ -82,6 +87,7 @@ orb.fs = {
                                        chmod = "/bin/chmod",
                                        chgrp = "/bin/chgrp",
                                        chown = "/bin/chown",
+                                       ps = "/bin/ps"
       }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end

@@ -98,7 +98,6 @@ separately.
 ### Executables
 
 * [x] ls
-* [x] cd
 * [x] cat
 * [x] mkdir
 * [x] env
@@ -106,11 +105,11 @@ separately.
 * [x] mv
 * [x] rm
 * [x] echo
-* [x] export
 * [x] smash (bash-like)
 * [x] chmod
 * [x] chown
 * [x] chgrp
+* [x] ps
 * [ ] man
 * [ ] mail
 * [ ] ssh
@@ -124,7 +123,8 @@ Other shell features
 
 * [x] sandbox scripts (limited api access)
 * [x] enforce access controls in the filesystem
-* [ ] input/output redirection, pipes
+* [x] input/output redirection
+* [ ] pipes
 * [ ] globs
 * [ ] env var interpolation
 * [ ] quoting in shell args
@@ -158,15 +158,15 @@ indicated simply by an entry in the `/etc/groups/$GROUP` directory
 named after the username.
 
 Rather than traditional stdio, here we have input and output modeled
-as `read` and `write` functions inside the environment table. There is
-no stderr. Due to limitations in the engine, there is no
-character-by-character IO; it is only full strings (usually a whole
-line) at a time that are passed to `write` or returned from
-`read`. The sandbox in which scripts run have `print`, `io.write`, and
-`io.read` redefined to these functions; when a session is initiated
-over digilines it's up to the node definition to set `read` and
-`write` in the environment to functions which move the data to and
-from digiline channels.
+as `read` and `write` functions inside the environment table (rather
+than in the `/dev` directory). There is no stderr. Due to limitations
+in the engine, there is no character-by-character IO; it is only full
+strings (usually a whole line) at a time that are passed to `write` or
+returned from `read`. The sandbox in which scripts run have `print`,
+`io.write`, and `io.read` redefined to these functions; when a session
+is initiated over digilines it's up to the node definition to set
+`read` and `write` in the environment to functions which move the data
+to and from digiline channels.
 
 Of course, all scripts are written in Lua. Filesystem, the environment
 table, and CLI args are exposed as `...`, so scripts typically start
@@ -176,8 +176,7 @@ permissions with Lua metamethods.
 
 Servers can have multiple processes running at once, but the shell
 does not support multiplexing, so this is only possible through
-connecting multiple terminals to a single server. TODO: expose process
-table in `/proc`
+connecting multiple terminals to a single server.
 
 ## Blocks
 

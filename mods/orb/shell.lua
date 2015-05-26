@@ -99,7 +99,8 @@ orb.shell = {
                print = function(...)
                   -- print(...)
                   write(tostring(...)) write("\n") end,
-               coroutine = { yield = coroutine.yield },
+               coroutine = { yield = coroutine.yield,
+                             status = coroutine.status },
                io = { write = write, read = read },
                type = type,
                table = { concat = table.concat },
