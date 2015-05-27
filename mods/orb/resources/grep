@@ -1,0 +1,10 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+
+local line = io.read()
+
+while line do
+   if(line:match(args[1])) then print(line) end
+   line = io.read()
+end

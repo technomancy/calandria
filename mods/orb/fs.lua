@@ -56,7 +56,7 @@ orb.fs = {
 
    copy_to_fs = function(f, fs_path, real_path)
       local dir, base = orb.fs.dirname(fs_path)
-      local path = "/" .. orb.mod_dir .. "/resources/" .. real_path
+      local path = orb.mod_dir .. "/resources/" .. real_path
       local file = io.open(path, "r")
       f["/"..dir][base] = file:read("*all")
       file:close()
