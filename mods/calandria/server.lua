@@ -9,9 +9,8 @@ calandria.server = {
    end,
 
    make = function(player)
-      local f_root = orb.fs.empty()
-      orb.fs.seed(orb.fs.proxy(f_root, "root", f_root), {player})
-      local fs = orb.fs.proxy(f_root, player, f_root)
+      local fs = orb.fs.empty()
+      orb.fs.seed(orb.fs.proxy(fs, "root", fs), {player})
 
       return { fs = fs, sessions = {} }
    end,
@@ -71,10 +70,6 @@ calandria.server = {
       local filesystems = {}
       for k,v in pairs(calandria.server.placed) do
          print("Saving server"..k)
-         for fn,v2 in pairs(v.fs) do
-            print(fn)
-            print(v2)
-         end
          filesystems[k] = v.fs
       end
       file:write(minetest.serialize(filesystems))
@@ -83,7 +78,9 @@ calandria.server = {
 
    scheduler = function(pos, node, _active_object_count, _wider)
       local server = calandria.server.placed[key_for(pos)]
-      orb.process.scheduler(server.fs)
+      if server.fs and server.fs.proc then
+         orb.process.scheduler(server.fs)
+      end
    end,
 }
 

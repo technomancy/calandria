@@ -7,8 +7,8 @@ orb.fs = {
    end,
 
    mkdir = function(f, path, env)
-      local dir, base = orb.fs.dirname(path)
-      local parent = f[orb.fs.normalize(dir, env and env.CWD)]
+      local dir, base = orb.fs.dirname(orb.fs.normalize(path, env and env.CWD))
+      local parent = f[dir]
 
       if(not parent) then orb.fs.mkdir(f, dir, env) end
       if(parent[base]) then return parent[base] end
