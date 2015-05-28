@@ -19,9 +19,12 @@ digipad.term_def_chan = "1"
 digipad.keyb_formspec = digipad.keyb_form_first .. digipad.keyb_base_chan ..
 	digipad.keyb_def_chan  .. digipad.keyb_form_second
 
+digipad.terminal_size = {10, 8}
+
 digipad.terminal_formspec =
-"size[10,8;]"..
-"field[0,8;10,1;input;;]"
+   "size[" .. digipad.terminal_size[1] .. "," .. digipad.terminal_size[2] ..
+   "]" .. "field[0," .. digipad.terminal_size[2] ";" digipad.terminal_size[1]
+   .. ",1;input;;]"
 
 -- ================
 -- Function declarations
@@ -87,7 +90,7 @@ end
 
  digipad.new_line = function(pos, text)
 	local max_chars = 40
-	local max_lines = 10
+	local max_lines = digipad.terminal_size[2] * 2
 	local meta = minetest.env:get_meta(pos)
 	local lines = meta:get_int("lines")	
 	if lines > max_lines then  -- clear screen before printing the line - so it's never blank

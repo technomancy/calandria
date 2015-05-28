@@ -44,6 +44,9 @@ calandria.server = {
          local session = server.sessions[player]
          if(not session) then
             local env = calandria.server.session(pos, server, player, channel)
+            -- since the input is in another formspec field, the
+            -- regular prompt makes no sense.
+            env.PROMPT = "--------------------------------\n"
             local fs = orb.fs.proxy(server.fs, player, server.fs)
             local co = orb.process.spawn(fs, env, "smash")
          end

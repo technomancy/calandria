@@ -26,7 +26,7 @@ Create a new world in Creative mode. It will spawn you in a world with
 a single block to stand on; you can build a ship out from there.
 
 In order to start using the OS, you'll need to place a server block
-first. Then place a secure digiterm near it. Connect them with
+first. Then place a terminal near it. Connect them with
 digilines, and then right-click on the term. For now enter any random
 thing as the channel, then wait a second and right-click again. At
 that point you can enter commands in the bottom and hit submit. Output
