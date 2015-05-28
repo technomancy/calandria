@@ -4,8 +4,9 @@ calandria.server = {
    placed = {},
 
    after_place = function(pos, placer, _itemstack, _pointed)
-      calandria.server.placed[key_for(pos)] =
-         calandria.server.make(placer:get_player_name())
+      local server = calandria.server.make(placer:get_player_name())
+      calandria.server.placed[key_for(pos)] = server
+      return server
    end,
 
    make = function(player)
@@ -39,7 +40,13 @@ calandria.server = {
          local value = msg
          local player = "singleplayer"
          local server = calandria.server.placed[key_for(pos)]
-         if not server then print("derp, no server") return end
+         if not server then
+            print("Derp; no server. Creating a new one.") -- should never happen
+            server = calandria.server.after_place(pos, {get_player_name =
+                                                           function()
+                                                              return player
+            end})
+         end
 
          local session = server.sessions[player]
          if(not session) then
@@ -107,7 +114,7 @@ minetest.register_node("calandria:server", {
                              {'cal_server_side.png', 'cal_server_side.png',
                               'cal_server_side.png', 'cal_server_side.png',
                               'cal_server_side.png', 'cal_server_front.png'},
-                          groups = {cracky=3,level=1},
+                          groups = {dig_immediate = 2},
                           -- sounds = default.node_sound_stone_defaults(),
                           digiline = {
                              receptor = {},

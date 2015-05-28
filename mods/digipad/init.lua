@@ -1,184 +1,171 @@
+-- Taken from digipad mod, but trimmed down to just the interactive terminal
+
 digipad = {}
-dofile(minetest.get_modpath("digipad").."/terminal.lua")  -- add terminal to mod
--- ========================
---Declare shared variables / functions
--- ========================
-digipad.digipad_formspec =	-- Defines the grid of buttons
-	"size[4,6]"..
-	"button[0,1;1,1;dc1;1]button[1,1;1,1;dc2;2]button[2,1;1,1;dc3;3]"..
-	"button[0,2;1,1;dc4;4]button[1,2;1,1;dc5;5]button[2,2;1,1;dc6;6]"..
-	"button[0,3;1,1;dc7;7]button[1,3;1,1;dc8;8]button[2,3;1,1;dc9;9]"..
-	"button_exit[0,4;1,1;dcC;Cancel]button[1,4;1,1;dc0;0]button_exit[2,4;1,1;dcA;Submit]"..
-	"button[3,1;1,1;chan1;Chan 1]button[3,2;1,1;chan2;Chan 2]button[3,3;1,1;chan3;Chan 3]"
-	
-digipad.hidecode = function(len)
-	if     (len == 0 or len==nil) then return "" -- not sure if needed
-	else 
-		return string.rep("*",len)
-	end
-	
+
+-- ================
+-- Variable declarations
+-- ================
+
+digipad.term_base_chan = "tty"
+digipad.term_def_chan = "1"
+
+digipad.terminal_size = {10, 8}
+
+digipad.formspec =
+   "size[" .. digipad.terminal_size[1] .. "," .. digipad.terminal_size[2] ..
+   "]" .. "field[0," .. digipad.terminal_size[2] .. ";" ..
+   digipad.terminal_size[1] .. ",1;input;;]"
+
+-- ================
+-- Function declarations
+-- ================
+
+digipad.set_channel = function(pos, new_channel)
+   local meta = minetest.env:get_meta(pos)
+   meta:set_string("channel", new_channel)
 end
 
-digipad.submit = function (pos, channel, number)
-	--minetest.chat_send_player("singleplayer", "Code is "..number)
-	digiline:receptor_send(pos, digiline.rules.default, channel, number)
+digipad.help = function(pos)  -- print help text
+   digipad.new_line(pos, "Commands preceded with a / go to the")
+   digipad.new_line(pos, "terminal. All others are sent along the digiline.")
+   digipad.new_line(pos, "Commands are:   /clear  /help  /channel")
 end
 
-digipad.cons = function (pos)
-	local meta = minetest.env:get_meta(pos)
-	meta:set_string("formspec", digipad.digipad_formspec.."label[0,0;Enter Code:]")
-	meta:set_string("code", "")
-	meta:set_string("baseChannel", "keypad");
-	meta:set_int("channelExt",1)
-end
-digipad.recvFields = function(pos,formname,fields,sender)
-	local meta = minetest.env:get_meta(pos)
-	local node=minetest.env:get_node(pos)
-	local rules=mesecon.rules.buttonlike_get(node)
-	local baseChannel=meta:get_string("baseChannel")
-	local ext=meta:get_int("channelExt")
-	local code=meta:get_string("code")
-	if fields.dcA then  --Accept button
-		if code~="" then
-			digipad.submit(pos, (baseChannel..ext), code)
-			--print(meta:get_string("baseChannel"))
---~ 			else 
---~ 				meta:set_string("formspec", digipad.digipad_formspec.."label[0,0;Enter Code:]")
-		end
-		meta:set_string("code","")
-	elseif fields.dcC then -- Cancel button
-		meta:set_string("formspec", digipad.digipad_formspec.."label[0,0;Enter Code:]")
-		meta:set_string("code","")  
-	elseif fields.chan1 then --Set Channel 1
-		meta:set_int("channelExt",1) 
-	elseif fields.chan2 then --Set Channel 2
-		meta:set_int("channelExt",2) 
-	elseif fields.chan3 then --Set Channel 3
-		meta:set_int("channelExt",3)
-	else
-		local button=nil;
-		if     fields.dc0 then button="0"
-		elseif fields.dc1 then button="1"
-		elseif fields.dc2 then button="2"
-		elseif fields.dc3 then button="3"
-		elseif fields.dc4 then button="4"
-		elseif fields.dc5 then button="5"
-		elseif fields.dc6 then button="6"
-		elseif fields.dc7 then button="7"
-		elseif fields.dc8 then button="8"
-		elseif fields.dc9 then button="9"
-		end
-		if button then  -- if button ~= nil (ie a number button was pressed)
-			if string.len(meta:get_string("code")) >= 10 then -- If code is really long, submit & start over
-				digipad.submit(pos, (baseChannel..ext), code)
-				meta:set_string("code","")
-			end
-			meta:set_string("code",meta:get_string("code")..button)
-		end
-	end
-	meta:set_string("formspec",digipad.digipad_formspec.."label[1,0;"..digipad.hidecode(meta:get_string("code"):len()).."]")
+digipad.delete_spaces = function(s)
+   -- David Manura
+   -- trim whitespace from both ends of string
+   return s:find'^%s*$' and '' or s:match'^%s*(.*%S)'
 end
 
--- ========================
--- Begin node declarations
--- ========================
+digipad.clear = function(pos)
+   local meta = minetest.env:get_meta(pos)
+   meta:set_string("formspec", digipad.formspec) -- reset to default
+   meta:set_int("lines", 0)  -- start at the top of the screen again
+end
 
-minetest.register_node("digipad:digipad", {
-	description = "Digipad",
-	tiles = {
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_front.png"
-	},
-	drawtype = "nodebox",
-	paramtype = "light",
-	paramtype2 = "facedir",
-	sunlight_propagates = true,
-	walkable = true,
-	inventory_image = "digicode_front.png",
-	selection_box = {
-		type = "fixed",
-		fixed = { -6/16, -.5, 6/16, 6/16, .5, 8/16 }
-	},
-	node_box = {
-		type = "fixed",
-		fixed = { -6/16, -.5, 6/16, 6/16, .5, 8/16 }
-	},
-	digiline = 
-	{
-		receptor={},
-	},
-	groups = {choppy = 3, dig_immediate = 2},
-	sounds = default.node_sound_stone_defaults(),
-	on_construct = function(pos)	--Initialize some variables (local per instance)
-		local meta = minetest.env:get_meta(pos)
-		digipad.cons(pos)
-		meta:set_string("infotext", "Digipad")
-	end,
-	on_receive_fields = function(pos,formname,fields,sender)
-		digipad.recvFields(pos,formname,fields,sender)
-	end
-		
-})
+digipad.parse_cmd = function(pos, cmd)
+   if cmd == "clear" then
+      digipad.clear(pos)
+   elseif cmd == "help" then
+      digipad.help(pos)
+      -- If cmd _starts_with_ "channel", since we need an argument too.
+   elseif string.sub(cmd, 1, 7) == "channel" then
+      raw_arg = string.sub(cmd, 8) -- Cut "channel" out
+      arg = digipad.delete_spaces(raw_arg)
+      if (arg ~= nil) and (arg ~= "") then
+         digipad.set_channel(pos, digipad.term_base_chan .. arg)
+         digipad.new_line(pos, "Channel set to "..digipad.term_base_chan .. arg)
+      else -- no argument
+         digipad.new_line(pos, "Example: ''/channel 2'' will change")
+         digipad.new_line(pos, "the channel to ''tty2'' ")
+      end
+   else
+      digipad.new_line(pos, cmd .. ": command not found")
+   end
+end
 
-minetest.register_node("digipad:digipad_hard", {
-	description = "Hardened Digipad",
-	tiles = {
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_side.png",
-		"digicode_side.png",
-		"digipad_hard_front.png"
-	},
-	drawtype = "nodebox",
-	paramtype = "light",
-	paramtype2 = "facedir",
-	sunlight_propagates = true,
-	walkable = true,
-	digiline = 
-	{
-		receptor={},
-	},
-	node_box = {
-		type = "fixed",
-		--All values -0.5 to 0.5, measured from center
-		--- Left, down, depth of front, right, up, depth of back
-		fixed = { -0.5, -.5, 1/4, 0.5, .5, 0.5}
-	},
-	inventory_image="digipad_hard_front.png",
-	groups = {cracky=1,level=2},
-	on_construct = function(pos)
-		local meta = minetest.env:get_meta(pos)
-		digipad.cons(pos)
-		meta:set_string("infotext", "Hardened Digipad")
-	end,
-	on_receive_fields = function(pos,formname,fields,sender)
-		digipad.recvFields(pos,formname,fields,sender)
-	end
-})
+local on_digiline_receive = function (pos, node, channel, msg)
+   if(msg == "") then -- form-feed is typically used to clear screen
+      digipad.clear(pos)
+   else
+      digipad.new_line(pos, msg)
+   end
+end
 
--- ========================
---Crafting recipes
--- ========================
+digipad.new_line = function(pos, text)
+   local max_chars = digipad.terminal_size[1] * 8
+   local max_lines = digipad.terminal_size[2] * 4
+   local meta = minetest.env:get_meta(pos)
+   local lines = meta:get_int("lines")
 
-minetest.register_craft({
-	output = 'digipad:digipad',
-	recipe = {
-		{"mesecons_button:button_off", "mesecons_button:button_off", "mesecons_button:button_off"},
-		{"default:steel_ingot", "mesecons_luacontroller:luacontroller0000", "default:steel_ingot"},
-		{"default:steel_ingot", "digilines:wire_std_00000000", "default:steel_ingot"},
-	}
-})
+   -- clear screen before printing the line - so it's never blank
+   if lines > max_lines then
+      digipad.clear(pos)
+      lines = meta:get_int("lines") -- update after clear
+   end
 
-minetest.register_craft({
-	output = 'digipad:digipad_hard',
-	recipe = {
-		{"default:steel_ingot", "default:steel_ingot", "default:steel_ingot"},
-		{"default:steel_ingot", "digipad:digipad", "default:steel_ingot"},
-		{"default:steel_ingot","digilines:wire_std_00000000","default:steel_ingot"},
-	}
+   local formspec = meta:get_string("formspec")
+   local offset = lines / 8
+   local line = text:sub(1, max_chars)
+   local new_formspec = formspec .. "label[0," .. offset .. ";" .. line .. "]"
+   meta:set_string("formspec", new_formspec)
+   lines = lines + 1
+   meta:set_int("lines", lines)
+   -- TODO: preserve input upon text insertion
+   meta:set_string("formspec", new_formspec)
+
+   -- If not all could be printed, recurse on the rest of the string
+   if string.len(text) > max_chars then
+      text = string.sub(text,max_chars)
+      digipad.new_line(pos, text)
+   end
+end
+
+digipad.on_construct = function(pos)
+   local meta = minetest.env:get_meta(pos)
+   meta:set_string("formspec", digipad.formspec)
+   meta:set_string("Infotext", "Terminal")
+   meta:set_int("lines", 0)
+   -- set default channel (base + default extension) :
+   meta:set_string("channel", digipad.term_base_chan .. digipad.term_def_chan)
+
+   digipad.new_line(pos, "/help for help")  -- print welcome text
+end
+
+digipad.on_receive_fields = function(pos, formname, fields, sender)
+   local meta = minetest.env:get_meta(pos)
+   local text = fields.input
+   local channel = meta:get_string("channel")
+   if text ~= nil then
+      digipad.new_line(pos, "> " .. text)
+
+      if string.sub(text,1,1) == "/" then  -- command is for terminal
+         text = string.sub(text, 2) -- cut off first char
+         digipad.parse_cmd(pos, text)
+      else
+         digiline:receptor_send(pos, digiline.rules.default, channel, text)
+      end
+   end
+   -- TODO: don't close terminal when enter is pressed
+end
+
+minetest.register_node("digipad:terminal", {
+                          description = "Interactive Terminal",
+                          paramtype = "light",
+                          paramtype2 = "facedir",
+                          sunlight_propagates = true,
+                          walkable = true,
+                          drawtype = "nodebox",
+                          selection_box = {
+                             type = "fixed",
+                             fixed = {
+                                {-0.5, -0.5, -0.5, 0.5, -0.3, 0}, -- Keyboard
+                                {-0.5, -0.5, 0, 0.5, 0.5, 0.5}, --Screen
+                             }
+                          },
+                          node_box = {
+                             type = "fixed",
+                             fixed = {
+                                {-0.5, -0.5, -0.5, 0.5, -0.3, 0}, -- Keyboard
+                                {-0.5, -0.5, 0, 0.5, 0.5, 0.5}, --Screen
+                             }
+                          },
+                          tiles = {
+                             "terminal_top.png",
+                             "digicode_side.png",
+                             "digicode_side.png",
+                             "digicode_side.png",
+                             "digicode_side.png",
+                             "terminal_front.png"
+                          },
+                          digiline =
+                             {
+                                receptor={},
+                                effector = {
+                                   action = on_digiline_receive
+                                },
+                             },
+                          groups = {dig_immediate = 2},
+                          on_construct = digipad.on_construct,
+                          on_receive_fields = digipad.on_receive_fields,
 })
