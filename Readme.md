@@ -27,6 +27,37 @@ involve simply using the OS on the computer; some of them can't be
 done without programming the main computer; some require programming
 the robot.
 
+## Current status
+
+Lots still to do!
+
+If you start a game in Calandria right now, it will spawn you in a
+world with a single block to stand on. Because of this you'll want to
+start in Creative Mode so you can build out a ship.
+
+In order to start using the OS, you'll need to place a server block
+first. Then place a secure digiterm near it. Connect them with
+digilines, and then right-click on the term. For now enter any random
+thing as the channel, then wait a second and right-click again. At
+that point you can enter commands in the bottom and hit submit. Output
+should start showing up in the top pane, but
+[very slowly](https://github.com/technomancy/calandria/issues/18).
+
+There's also an unfinished
+[pre-made world you can use](http://p.hagelb.org/calandria-ship.tar.gz).
+
+You can use the OS from the CLI as well:
+
+```
+$ lua mods/orb/init.lua
+```
+
+However, when run this way it uses blocking input, which will prevent
+the scheduler from running any background processes. Note the
+filesystem is purely in-memory in the Lua process and will not persist
+when run from the CLI, while when running in-game it should be
+persisted in between server restarts.
+
 ## Ship
 
 The ship is powered by a main power reactor with a backup solar array
@@ -124,7 +155,7 @@ Other shell features
 * [x] sandbox scripts (limited api access)
 * [x] enforce access controls in the filesystem
 * [x] input/output redirection
-* [ ] pipes
+* [x] pipes
 * [ ] globs
 * [ ] env var interpolation
 * [ ] quoting in shell args
