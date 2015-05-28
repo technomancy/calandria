@@ -1,6 +1,6 @@
 # Calandria
 
-This is a game that uses the [MineTest engine](http://www.minetest.net) to
+This is a game that uses the [Minetest engine](http://www.minetest.net) to
 teach programming and other technical skills.
 
 <img src="http://p.hagelb.org/calandria-shell.png" alt="shell screenshot" width="600" />
@@ -12,28 +12,18 @@ accident, so you need to reprogram it, among other things.
 
 <img src="http://p.hagelb.org/calandria-corridor.png" alt="shell screenshot" width="600" />
 
-## Repairs/Puzzles
+## Playing
 
-Some samples of the challenges:
+It is still *very* rough.
 
-* Restore power to a door
-* Fix the robot (needs a power cell?)
-* Bring main power back online
-* Repair the hull (otherwise the oxygen will leak out)
-* Fix life support (otherwise parts of the ship have no oxygen)
+Download a copy of the game (either through `git clone` or
+[as an archive](https://github.com/technomancy/calandria/archive/master.zip))
+and place it in the `games/` subdirectory of your Minetest
+installation. Launch Minetest and select the Calandria game at the
+bottom (blue C icon with stars).
 
-Some of these will involve simply placing blocks; some of them will
-involve simply using the OS on the computer; some of them can't be
-done without programming the main computer; some require programming
-the robot.
-
-## Current status
-
-Lots still to do!
-
-If you start a game in Calandria right now, it will spawn you in a
-world with a single block to stand on. Because of this you'll want to
-start in Creative Mode so you can build out a ship.
+Create a new world in Creative mode. It will spawn you in a world with
+a single block to stand on; you can build a ship out from there.
 
 In order to start using the OS, you'll need to place a server block
 first. Then place a secure digiterm near it. Connect them with
@@ -58,6 +48,21 @@ filesystem is purely in-memory in the Lua process and will not persist
 when run from the CLI, while when running in-game it should be
 persisted in between server restarts.
 
+## Repairs/Puzzles
+
+Some samples of the challenges: (to implement in the future?)
+
+* Restore power to a door
+* Fix the robot (needs a power cell?)
+* Bring main power back online
+* Repair the hull (otherwise the oxygen will leak out)
+* Fix life support (otherwise parts of the ship have no oxygen)
+
+Some of these will involve simply placing blocks; some of them will
+involve simply using the OS on the computer; some of them can't be
+done without programming the main computer; some require programming
+the robot.
+
 ## Ship
 
 The ship is powered by a main power reactor with a backup solar array
@@ -68,7 +73,7 @@ various systems.
 Some areas of the ship have oxygen, but some are depressurized. The
 robot can repair the hull breaches, and the oxygen system can pump
 atmosphere into the breached rooms. It would be really cool if we
-could model atmosphere as an invisible MineTest liquid, assuming we
+could model atmosphere as an invisible Minetest liquid, assuming we
 can invert the normal damage logic.
 
 A bunch of systems, including the robot, have been damaged. Some of
@@ -271,19 +276,22 @@ OS is single-user.
 [DroneTest](https://github.com/ninnghazad/dronetest) has programmable
 computer nodes as well as drone entities that can move
 around. However, it does all its output by generating textures for the
-display node every time it needs to change, and the MineTest engine
+display node every time it needs to change, and the Minetest engine
 does not garbage collect old images. This means every DroneTest game
 will eventually run out of memory. In addition, it does not implement
 a terminal, relying instead on line-by-line commands. Plus I couldn't
 get it working on my own machine. Also: the name is cringe-worthy.
 
-[A MineTest pull request](https://github.com/minetest/minetest/pull/1737)
+[Hoverbot](https://github.com/Pilcrow182/hoverbot) is another
+programmable robot mod.
+
+[A Minetest pull request](https://github.com/minetest/minetest/pull/1737)
 implements the ability to accept character-based input instead of
 line-based input, but it has not been merged and hasn't seen any
 activity since December of 2014. It is just the first prerequisite to
-building a terminal in MineTest, but it looks promising.
+building a terminal in Minetest, but it looks promising.
 
-The [Terminal](https://github.com/bas080/terminal) MineTest mod claims
+The [Terminal](https://github.com/bas080/terminal) Minetest mod claims
 to implement a terminal, but it doesn't. It only allows for shell
 commands to be run using a line-based input, and streaming output to
 the messages output.
