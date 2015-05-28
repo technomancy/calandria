@@ -297,4 +297,5 @@ this satisfactorily.
 Textures: [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)
 Sky textures from [Moontest](https://github.com/Amaz1/moontest).
 
-Code: GPLv3
+Calandria-specific code (calandria/orb mods): GPLv3 or later; see COPYING.
+Other bundled mods distributed under their own licenses as documented.
