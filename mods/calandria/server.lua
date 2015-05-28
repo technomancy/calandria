@@ -34,19 +34,20 @@ calandria.server = {
    end,
 
    digiline_action = function(pos, node, channel, msg)
-      if(type(msg) == "function") then
-         local value = msg()
-         local player = value.player
+      -- TODO: fix for multiple users
+      if(type(msg) == "string") then
+         local value = msg
+         local player = "singleplayer"
          local server = calandria.server.placed[key_for(pos)]
          if not server then print("derp, no server") return end
 
-         if(value.code == "init") then
+         local session = server.sessions[player]
+         if(not session) then
             local env = calandria.server.session(pos, server, player, channel)
             local fs = orb.fs.proxy(server.fs, player, server.fs)
             local co = orb.process.spawn(fs, env, "smash")
-         elseif value.msg and value.msg ~= "" then
-            server.sessions[player].buffer_input(value.msg)
          end
+         server.sessions[player].buffer_input(value)
       end
    end,
 
@@ -70,6 +71,7 @@ calandria.server = {
       local filesystems = {}
       for k,v in pairs(calandria.server.placed) do
          print("Saving server"..k)
+         table.remove(v.fs, "proc") -- don't serialize special nodes
          filesystems[k] = v.fs
       end
       file:write(minetest.serialize(filesystems))
@@ -78,13 +80,13 @@ calandria.server = {
 
    scheduler = function(pos, node, _active_object_count, _wider)
       local server = calandria.server.placed[key_for(pos)]
-      if server.fs and server.fs.proc then
+      if server and server.fs and server.fs.proc then
          orb.process.scheduler(server.fs)
       end
    end,
 }
 
-placed = calandria.server.load()
+pcall(calandria.server.load)
 minetest.register_on_shutdown(calandria.server.save)
 
 minetest.register_node("calandria:server", {
