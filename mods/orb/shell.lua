@@ -27,7 +27,7 @@ orb.shell = {
             local target = table.remove(tokens, 1)
             target = orb.fs.normalize(target, env.CWD)
             local dir, base = orb.fs.dirname(target)
-            f[dir][base] = ""
+            if(type(f[dir][base]) == "string") then f[dir][base] = "" end
             env.write = orb.utils.partial(orb.fs.write, f, target)
             break
          elseif(t == ">>") then
@@ -99,7 +99,9 @@ orb.shell = {
                io = { write = write, read = read },
                type = type,
                table = { concat = table.concat,
-                         remove = table.remove, },
+                         remove = table.remove,
+                         insert = table.insert,
+               },
       }
    end,
 

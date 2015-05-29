@@ -106,7 +106,7 @@ orb.fs = {
                                        ps = "/bin/ps",
                                        grep = "/bin/grep",
                                        reload = "/bin/reload",
-                                       -- mkfifo = "/bin/mkfifo"
+                                       mkfifo = "/bin/mkfifo",
       }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end

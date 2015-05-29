@@ -21,9 +21,8 @@ orb.process = {
             for k,p in pairs(procs) do
                if(type(p) == "table" and p.thread) then
                   if(coroutine.status(p.thread) == "dead") then
-                     table.remove(procs, k)
+                     procs[k] = nil
                   else
-                     -- print("Resuming "..p.command)
                      coroutine.resume(p.thread)
                   end
                end

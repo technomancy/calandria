@@ -2,5 +2,9 @@
 
 local f, env, args = ...
 for _,filename in pairs(args) do
-   io.write(orb.read(f, orb.normalize(filename, env.CWD)))
+   local content = orb.read(f, orb.normalize(filename, env.CWD))
+   while content do -- nil signals EOF
+      io.write(content)
+      content = orb.read(f, orb.normalize(filename, env.CWD))
+   end
 end
