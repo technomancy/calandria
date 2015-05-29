@@ -4,15 +4,24 @@ calandria.server = {
    placed = {},
 
    after_place = function(pos, placer, _itemstack, _pointed)
-      local server = calandria.server.make(placer:get_player_name())
+      local server = calandria.server.make(placer:get_player_name(), pos)
       calandria.server.placed[key_for(pos)] = server
       return server
    end,
 
-   make = function(player)
+   make = function(player, pos)
       local fs = orb.fs.empty()
       orb.fs.seed(orb.fs.proxy(fs, "root", fs), {player})
-
+      -- TODO: spin this off into a spawn_daemon function?
+      local proc = orb.fs.mkdir(orb.fs.proxy(fs, "root", fs), "/proc/root")
+      local digi_daemon = orb.process.make_digi_daemon(digiline, pos)
+      local co = coroutine.create(orb.utils.partial(digi_daemon, fs))
+      local id = orb.process.id_for(co)
+      proc._group = "root"
+      proc[id] = { thread = co,
+                   command = "*digi_daemon*",
+                   id = id,
+                   _user = "root" }
       return { fs = fs, sessions = {} }
    end,
 
@@ -82,6 +91,7 @@ calandria.server = {
       for k,v in pairs(calandria.server.placed) do
          print("Saving server"..k)
          table.remove(v.fs, "proc") -- don't serialize special nodes
+         -- TODO: need a deeper walk to filter out functions
          filesystems[k] = v.fs
       end
       file:write(minetest.serialize(filesystems))

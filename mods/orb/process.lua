@@ -30,4 +30,19 @@ orb.process = {
          end
       end
    end,
+
+   make_digi_daemon = function(digiline, pos)
+      return function(f)
+         while true do
+            for channel,dir in pairs(f.digi) do
+               coroutine.yield()
+               if(type(v) == "table") then
+                  local output = v["out"]()
+                  digiline:receptor_send(pos, digiline.rules.default,
+                                         channel, output)
+               end
+            end
+         end
+      end
+   end,
 }
