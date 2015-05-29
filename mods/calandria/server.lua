@@ -62,7 +62,7 @@ calandria.server = {
             local env = calandria.server.session(pos, server, player, channel)
             -- since the input is in another formspec field, the
             -- regular prompt makes no sense.
-            env.PROMPT = "--------------------------------\n"
+            env.PROMPT = ""
             local fs = orb.fs.proxy(server.fs, player, server.fs)
             local co = orb.process.spawn(fs, env, "smash")
          end
@@ -75,9 +75,9 @@ calandria.server = {
    load = function()
       local file = io.open(calandria.server.path, "r")
       if(file) then
-         for k,v in pairs(minetest.deserialize(file:read("*all"))) do
-            print("Loading server "..k)
-            calandria.server.placed[k] = { fs = v, sessions = {} }
+         for k,fs in pairs(minetest.deserialize(file:read("*all"))) do
+            orb.process.restore_digi(fs)
+            calandria.server.placed[k] = { fs = fs, sessions = {} }
          end
          file:close()
       else
@@ -89,9 +89,7 @@ calandria.server = {
       local file = io.open(calandria.server.path, "w")
       local filesystems = {}
       for k,v in pairs(calandria.server.placed) do
-         print("Saving server"..k)
-         table.remove(v.fs, "proc") -- don't serialize special nodes
-         -- TODO: need a deeper walk to filter out functions
+         orb.fs.strip_special(v.fs)
          filesystems[k] = v.fs
       end
       file:write(minetest.serialize(filesystems))

@@ -173,6 +173,17 @@ orb.fs = {
       end
    end,
 
+   strip_special = function(f)
+      for k,v in orb.utils.mtpairs(f) do
+         if(type(v) == "string") then
+         elseif(type(v) == "table") then
+            orb.fs.strip_special(f)
+         else
+            f[k] = nil
+         end
+      end
+   end,
+
    proxy = function(raw, user, raw_root)
       local descend = function(f, path, user)
          local target = f

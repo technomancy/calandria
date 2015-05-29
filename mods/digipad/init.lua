@@ -72,6 +72,19 @@ local on_digiline_receive = function (pos, node, channel, msg)
    end
 end
 
+local split = function(str,div)
+   if(div=='') then return {str} end
+   if(div==str) then return {} end
+   local pos,res = 0,{}
+   for st,sp in function() return str:find(div,pos) end do
+      local str = string.sub(str,pos,st-1)
+      if(str ~= "") then table.insert(res,str) end
+      pos = sp + 1
+   end
+   table.insert(res,string.sub(str,pos))
+   return res
+end
+
 digipad.new_line = function(pos, text)
    local max_chars = digipad.terminal_size[1] * 8
    local max_lines = digipad.terminal_size[2] * 4
@@ -85,11 +98,12 @@ digipad.new_line = function(pos, text)
    end
 
    local formspec = meta:get_string("formspec")
-   local offset = lines / 8
+   local offset = lines / 4
    local line = text:sub(1, max_chars)
    local new_formspec = formspec .. "label[0," .. offset .. ";" .. line .. "]"
    meta:set_string("formspec", new_formspec)
-   lines = lines + 1
+   local lines_split = split(text, "\n")
+   lines = lines + #lines_split
    meta:set_int("lines", lines)
    -- TODO: preserve input upon text insertion
    meta:set_string("formspec", new_formspec)

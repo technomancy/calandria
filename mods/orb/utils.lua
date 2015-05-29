@@ -57,4 +57,16 @@ orb.utils = {
          return f(unpack(new_args))
       end
    end,
+
+   keys = function(t)
+      local ks = {}
+      for k,_ in pairs(t) do table.insert(ks, k) end
+      return ks
+   end,
+
+   vals = function(t)
+      local vs = {}
+      for _,v in pairs(t) do table.insert(vs, v) end
+      return vs
+   end,
 }

@@ -36,13 +36,21 @@ orb.process = {
          while true do
             for channel,dir in pairs(f.digi) do
                coroutine.yield()
-               if(type(v) == "table") then
+               if(type(dir) == "table") then
                   local output = v["out"]()
                   digiline:receptor_send(pos, digiline.rules.default,
                                          channel, output)
                end
             end
          end
+      end
+   end,
+
+   restore_digi = function(f)
+      for k,v in orb.utils.mtpairs(f.digi) do
+         local channel_dir = "/digi/" .. k
+         orb.shell.exec(f, env, "mkfifo " .. channel_dir .. "/in")
+         orb.shell.exec(f, env, "mkfifo " .. channel_dir .. "/out")
       end
    end,
 }
