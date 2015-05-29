@@ -25,22 +25,15 @@ orb.shell = {
             break
          elseif(t == ">") then
             local target = table.remove(tokens, 1)
-            local dirname, base = orb.fs.dirname(orb.fs.normalize(target, env.CWD))
-            local dir = f[dirname]
-            local contents = ""
-            env.write = function(output)
-               contents = contents .. output
-               dir[base] = contents
-            end
+            target = orb.fs.normalize(target, env.CWD)
+            local dir, base = orb.fs.dirname(target)
+            f[dir][base] = ""
+            env.write = orb.utils.partial(orb.fs.write, f, target)
             break
          elseif(t == ">>") then
-            local dirname, base = orb.fs.dirname(orb.fs.normalize(target, env.CWD))
-            local dir = f[dirname]
-            local contents = dir[base] or ""
-            env.write = function(output)
-               contents = contents .. output
-               dir[base] = contents
-            end
+            local target = table.remove(tokens, 1)
+            target = orb.fs.normalize(target, env.CWD)
+            env.write = orb.utils.partial(orb.fs.write, f, target)
             break
          elseif(t == "|") then
             -- TODO: support pipelines of arbitrary length
@@ -93,17 +86,20 @@ orb.shell = {
                        mkdir = orb.fs.mkdir,
                        exec = orb.shell.exec,
                        pexec = orb.shell.pexec,
+                       read = orb.fs.read,
+                       write = orb.fs.write,
+                       append = orb.fs.append,
                        reload = orb.fs.reloaders[f],
                      },
                pairs = orb.utils.mtpairs,
                print = function(...)
-                  -- print(...)
                   write(tostring(...)) write("\n") end,
                coroutine = { yield = coroutine.yield,
                              status = coroutine.status },
                io = { write = write, read = read },
                type = type,
-               table = { concat = table.concat },
+               table = { concat = table.concat,
+                         remove = table.remove, },
       }
    end,
 

@@ -47,4 +47,13 @@ orb.utils = {
          return pairs(tab)
       end
    end,
+
+   partial = function(f, ...)
+      local partial_args = {...}
+      return function(...)
+         local new_args = orb.utils.shallow_copy(partial_args)
+         for _,v in ipairs(arg) do table.insert(new_args, v) end
+         return f(unpack(new_args))
+      end
+   end,
 }

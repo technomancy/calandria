@@ -29,6 +29,33 @@ orb.fs = {
       return "/" .. table.concat(t, "/"), basename
    end,
 
+   -- read/write/append here are wrappers that help you work with function
+   -- files, which is how pipes and other special devices are implemented.
+   read = function(f, path)
+      local contents = f[path]
+      if(type(contents) == "string") then
+         return contents
+      elseif(type(contents) == "function") then
+         return contents()
+      else
+         error("Tried to read " .. type(contents) .. " at " .. path)
+      end
+   end,
+
+   write = function(f, path, content)
+      local dir, base = orb.fs.dirname(path)
+      local target = f[path]
+      if(not target) then
+         f[dir][base] = content
+      elseif(type(target) == "string") then
+         f[dir][base] = f[dir][base] .. content
+      elseif(type(target) == "function") then
+         target(content)
+      else
+         error("Tried to append to " .. type(target) .. " at " .. path)
+      end
+   end,
+
    add_user = function(f, user)
       local home = "/home/" .. user
       orb.fs.mkdir(f, home)
@@ -79,6 +106,7 @@ orb.fs = {
                                        ps = "/bin/ps",
                                        grep = "/bin/grep",
                                        reload = "/bin/reload",
+                                       -- mkfifo = "/bin/mkfifo"
       }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end

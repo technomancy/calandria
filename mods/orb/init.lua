@@ -2,7 +2,7 @@
 
 orb = {
    mod_dir = (minetest and minetest.get_modpath("orb")) or
-      debug.getinfo(1,"S").source:sub(2, -9),
+      debug.getinfo(1,"S").source:sub(2, -9):gsub("(/+)$", "/"),
 }
 
 if(orb.mod_dir == "") then orb.mod_dir = "." end
@@ -36,11 +36,9 @@ if(arg) then
    orb.shell.exec(f1, e1, "mkdir mydir")
    orb.shell.exec(f1, e1, "mkdir /tmp/hi")
    orb.shell.exec(f1, e1, "ls /tmp/hi")
-   orb.shell.exec(f1, e0, "ls /etc")
-
-   orb.shell.exec(f1, e1, "cd /tmp")
-   orb.shell.exec(f1, e1, "cp /bin/ls ls2")
-   orb.shell.exec(f1, e1, "ls")
+   orb.shell.exec(f1, e1, "ls > /tmp/mydir")
+   orb.shell.exec(f1, e0, "ls /etc > /tmp/ls-etc")
+   orb.shell.exec(f1, e1, "cat /bin/cat > /tmp/cat")
 
    assert(orb.fs.readable(f0, f1["/home/technomancy"], "technomancy"))
    assert(orb.fs.readable(f0, f1["/bin"], "technomancy"))
