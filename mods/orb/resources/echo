@@ -1,4 +1,9 @@
 -- -*- lua -*-
 
 local f, env, args = ...
-io.write(table.concat(args, " "))
+
+if(args[1] == "-n") then
+   io.write(table.concat(args, " "))
+else
+   print(table.concat(args, " "))
+end
