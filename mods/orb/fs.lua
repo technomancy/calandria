@@ -58,23 +58,12 @@ orb.fs = {
       local dir, base = orb.fs.dirname(fs_path)
       local path = orb.mod_dir .. "/resources/" .. real_path
       local file = io.open(path, "r")
-      f["/"..dir][base] = file:read("*all")
+      dir = dir:gsub("^/", "")
+      f[dir][base] = file:read("*all")
       file:close()
    end,
 
-   seed = function(f, users)
-      for _,d in pairs({"/etc", "/home", "/tmp", "/bin"}) do
-         orb.fs.mkdir(f, d)
-         f[d]._group = "all"
-      end
-
-      orb.fs.mkdir(f, "/etc/groups")
-      f["/tmp"]._group_write = "true"
-
-      for _,user in pairs(users) do
-         orb.fs.add_user(f, user)
-      end
-
+   load_bin = function(f)
       for real_path, fs_path in pairs({ls = "/bin/ls",
                                        mkdir = "/bin/mkdir",
                                        cat = "/bin/cat",
@@ -89,9 +78,27 @@ orb.fs = {
                                        chown = "/bin/chown",
                                        ps = "/bin/ps",
                                        grep = "/bin/grep",
+                                       reload = "/bin/reload",
       }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end
+   end,
+
+   seed = function(f, users)
+      for _,d in pairs({"/etc", "/home", "/tmp", "/bin", "/digi"}) do
+         orb.fs.mkdir(f, d)
+         f[d]._group = "all"
+      end
+
+      orb.fs.mkdir(f, "/etc/groups")
+      f["/tmp"]._group_write = "true"
+      f["/digi"]._group_write = "true"
+
+      for _,user in pairs(users) do
+         orb.fs.add_user(f, user)
+      end
+
+      orb.fs.load_bin(f)
       return f
    end,
 
@@ -126,6 +133,15 @@ orb.fs = {
       local owner, group, group_write = orb.fs.dir_meta(dir)
       return owner == user or
          (group_write and orb.shell.in_group(f, user, group))
+   end,
+
+   reloaders = (orb.fs and orb.fs.reloaders) or {},
+
+   reloader = function(f)
+      return function()
+         dofile(orb.mod_dir .. "/init.lua")
+         orb.fs.load_bin(f)
+      end
    end,
 
    proxy = function(raw, user, raw_root)
@@ -187,6 +203,12 @@ orb.fs = {
          end,
       }
       setmetatable(f, mt)
+
+      -- only need this for fs roots
+      if(raw == raw_root) then
+         orb.fs.reloaders[f] = orb.fs.reloader(raw_root)
+      end
+
       return f
    end,
 }

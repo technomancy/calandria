@@ -43,6 +43,7 @@ orb.shell = {
             end
             break
          elseif(t == "|") then
+            -- TODO: support pipelines of arbitrary length
             local env2 = orb.utils.shallow_copy(env)
             local buffer = {}
             env2.read = function()
@@ -71,7 +72,7 @@ orb.shell = {
          local executable = f[orb.fs.normalize(executable_path, env.CWD)]
          if(executable) then
             local chunk = assert(loadstring(executable))
-            setfenv(chunk, orb.shell.sandbox(env))
+            setfenv(chunk, orb.shell.sandbox(f, env))
             return chunk(f, env, args)
          end
       end
@@ -82,7 +83,7 @@ orb.shell = {
       return pcall(function() orb.shell.exec(f, env, command) end)
    end,
 
-   sandbox = function(env)
+   sandbox = function(f, env)
       local read = function(...) return env.read(...) end
       local write = function(...) return env.write(...) end
 
@@ -92,6 +93,7 @@ orb.shell = {
                        mkdir = orb.fs.mkdir,
                        exec = orb.shell.exec,
                        pexec = orb.shell.pexec,
+                       reload = orb.fs.reloaders[f],
                      },
                pairs = orb.utils.mtpairs,
                print = function(...)

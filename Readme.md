@@ -26,11 +26,10 @@ Create a new world in Creative mode. It will spawn you in a world with
 a single block to stand on; you can build a ship out from there.
 
 In order to start using the OS, you'll need to place a server block
-first. Then place a terminal near it. Connect them with
-digilines, and then right-click on the term. For now enter any random
-thing as the channel, then wait a second and right-click again. At
-that point you can enter commands in the bottom and hit submit. Output
-should start showing up in the top pane, but
+first. Then place a terminal near it. Connect them with digilines, and
+then right-click on the term. At that point you can enter commands in
+the bottom and hit submit. Output should start showing up in the top
+pane, but
 [very slowly](https://github.com/technomancy/calandria/issues/18).
 
 There's also an unfinished
@@ -43,10 +42,12 @@ $ lua mods/orb/init.lua
 ```
 
 However, when run this way it uses blocking input, which will prevent
-the scheduler from running any background processes. Note the
-filesystem is purely in-memory in the Lua process and will not persist
-when run from the CLI, while when running in-game it should be
-persisted in between server restarts.
+the scheduler from running more than one process. (This means you
+can't pipe from one process to another, as this requires at least some
+level of faux-concurrency.)  Note the filesystem is purely in-memory
+in the Lua process and will not persist when run from the CLI, though
+when running in-game it should be persisted in between server
+restarts.
 
 ## Repairs/Puzzles
 
