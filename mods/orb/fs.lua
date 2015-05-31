@@ -177,7 +177,7 @@ orb.fs = {
       for k,v in orb.utils.mtpairs(f) do
          if(type(v) == "string") then
          elseif(type(v) == "table") then
-            orb.fs.strip_special(f)
+            orb.fs.strip_special(v)
          else
             f[k] = nil
          end
