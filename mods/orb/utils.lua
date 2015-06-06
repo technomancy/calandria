@@ -1,5 +1,7 @@
 -- utils
 
+-- mostly functions which are inexplicable omissions from the lua standard lib
+
 orb.utils = {
    split = function(str,div)
       if(div=='') then return {str} end

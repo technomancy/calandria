@@ -103,6 +103,9 @@ calandria.server = {
 }
 
 pcall(calandria.server.load)
+
+-- TODO: check to see if these have been loaded already:
+-- if(not minetest.registered_items["mod:item"]) then ...
 minetest.register_on_shutdown(calandria.server.save)
 
 minetest.register_node("calandria:server", {

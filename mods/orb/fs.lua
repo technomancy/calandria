@@ -1,5 +1,7 @@
 -- fake lil filesystem
 orb.fs = {
+
+   -- This gives us a raw filesystem that's just a table with permissions data
    empty = function()
       return {_user = "root", _group = "all", proc = {
                  _user = "root", _group = "all"
@@ -21,6 +23,8 @@ orb.fs = {
       return parent[base]
    end,
 
+   -- Actually returns both the dirname and the basename.
+   -- for instance, "/path/to/file" returns "/path/to" and "file"
    dirname = function(path)
       local t = orb.utils.split(path, "/")
       local basename = t[#t]
@@ -29,8 +33,11 @@ orb.fs = {
       return "/" .. table.concat(t, "/"), basename
    end,
 
-   -- read/write/append here are wrappers that help you work with function
-   -- files, which is how pipes and other special devices are implemented.
+   -- read/write/append here are wrappers that help you work with
+   -- function files, which is how pipes and other special devices are
+   -- implemented.  When dealing with regular files, you can just grab
+   -- them straight out of the filesystem as strings to read or drop strings
+   -- into the directory to write.
    read = function(f, path)
       local contents = f[path]
       if(type(contents) == "string") then
@@ -64,8 +71,8 @@ orb.fs = {
       f[home]._user = user
       f[home]._group = user
       orb.fs.mkdir(f, "/proc/" .. user)
-      f["/proc/" .. user]._user = user
-      f["/proc/" .. user]._group = user
+      f.proc[user]._user = user
+      f.proc[user]._group = user
    end,
 
    add_to_group = function(f, user, group)
@@ -81,6 +88,7 @@ orb.fs = {
       group_dir[user] = user
    end,
 
+   -- This is for copying stuff from the host OS into the virtualized OS.
    copy_to_fs = function(f, fs_path, real_path)
       local dir, base = orb.fs.dirname(fs_path)
       local path = orb.mod_dir .. "/resources/" .. real_path
@@ -113,6 +121,7 @@ orb.fs = {
       end
    end,
 
+   -- Load up an empty filesystem.
    seed = function(f, users)
       for _,d in pairs({"/etc", "/home", "/tmp", "/bin", "/digi"}) do
          orb.fs.mkdir(f, d)
@@ -166,6 +175,7 @@ orb.fs = {
 
    reloaders = (orb.fs and orb.fs.reloaders) or {},
 
+   -- Reload all of orb's own code, and reset the /bin directory.
    reloader = function(f)
       return function()
          dofile(orb.mod_dir .. "/init.lua")
@@ -184,6 +194,21 @@ orb.fs = {
       end
    end,
 
+   -- Proxying a raw filesystem has two purposes: one is to enforce filesystem
+   -- permissions rules (this is done using a metatable) and one is to allow
+   -- access using full filenames. For instance, these are equivalent:
+   --
+   -- f.home.technomancy.bin["myls"]
+   -- f["/home/technomancy/bin/myls"]
+   --
+   -- Raw filesystems require the first style, but the latter works with
+   -- proxied filesystems.
+   --
+   -- Be aware that f["/home"] will return another proxied subfilesystem
+   -- that looks like a filesystem but is actually just sliced off at
+   -- a subdirectory. This is a bit of a problem since calculating permissions
+   -- requires access to the "/etc/groups" directory, which is why this
+   -- function takes a raw_root argument as well.
    proxy = function(raw, user, raw_root)
       local descend = function(f, path, user)
          local target = f
@@ -198,7 +223,7 @@ orb.fs = {
          return target
       end
 
-      local unreadable = function(_k,v)
+      local unreadable = function(_k, v)
          return {_user = v._user, _group = v._group}
       end
 
@@ -223,6 +248,8 @@ orb.fs = {
             target[base] = content
          end,
 
+         -- Unfortunately Lua 5.1 has no way to specify an iterator from the
+         -- metatable, so this only works with orb.utils.mtpairs. =(
          __iterator = function(_f)
             assert(orb.fs.readable(raw_root, raw, user), "Not readable")
             local f = {}
@@ -244,7 +271,7 @@ orb.fs = {
       }
       setmetatable(f, mt)
 
-      -- only need this for fs roots
+      -- Only need this for fs roots.
       if(raw == raw_root) then
          orb.fs.reloaders[f] = orb.fs.reloader(raw_root)
       end

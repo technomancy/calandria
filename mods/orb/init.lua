@@ -13,8 +13,9 @@ dofile(orb.mod_dir .. "/shell.lua")
 dofile(orb.mod_dir .. "/process.lua")
 -- pp = dofile(orb.mod_dir .. "/PrettyPrint.lua")
 
--- interactively:
+-- for interactive use, but also as a sample of how the API works:
 if(arg) then
+   -- start with an empty filesystem
    f = orb.fs.empty()
    f0 = orb.fs.seed(orb.fs.proxy(f, "root", f),
                     {"technomancy", "buddyberg", "zacherson"})

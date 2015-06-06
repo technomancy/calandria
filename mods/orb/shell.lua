@@ -12,6 +12,9 @@ orb.shell = {
       }
    end,
 
+   -- This function does too much: it turns a command string into a tokenized
+   -- list of arguments, but it also searches the argument list for stdio
+   -- redirects and sets up the environment's read/write appropriately.
    parse = function(f, env, command)
       local args = {}
       local tokens = orb.utils.split(command, " +")
@@ -56,6 +59,9 @@ orb.shell = {
       return executable_name, args
    end,
 
+   -- Execute a command directly in the current coroutine. This is a low-level
+   -- call; usually you want orb.process.spawn which creates it as a proper
+   -- process.
    exec = function(f, env, command)
       local env = orb.utils.shallow_copy(env)
       local executable_name, args = orb.shell.parse(f, env, command)
@@ -72,10 +78,13 @@ orb.shell = {
       error(executable_name .. " not found.")
    end,
 
+   -- Like exec, but protected in a pcall.
    pexec = function(f, env, command)
       return pcall(function() orb.shell.exec(f, env, command) end)
    end,
 
+   -- Set up the sandbox in which code runs. Need to avoid exposing anything
+   -- that could allow security leaks.
    sandbox = function(f, env)
       local read = function(...) return env.read(...) end
       local write = function(...) return env.write(...) end
