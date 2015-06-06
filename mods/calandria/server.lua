@@ -12,16 +12,14 @@ calandria.server = {
    make = function(player, pos)
       local fs = orb.fs.empty()
       orb.fs.seed(orb.fs.proxy(fs, "root", fs), {player})
-      -- TODO: spin this off into a spawn_daemon function?
       local proc = orb.fs.mkdir(orb.fs.proxy(fs, "root", fs), "/proc/root")
-      local digi_daemon = orb.process.make_digi_daemon(digiline, pos)
-      local co = coroutine.create(orb.utils.partial(digi_daemon, fs))
-      local id = orb.process.id_for(co)
       proc._group = "root"
-      proc[id] = { thread = co,
-                   command = "*digi_daemon*",
-                   id = id,
-                   _user = "root" }
+
+      orb.process.spawn(fs, orb.shell.new_env("root"), "digi --daemon")
+      fs.digi.raw = function(channel, output)
+         digiline:receptor_send(pos, digiline.rules.default, channel, output)
+      end
+
       return { fs = fs, sessions = {} }
    end,
 
