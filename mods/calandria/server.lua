@@ -1,6 +1,4 @@
 calandria.server = {
-   placed = {},
-
    after_place = function(pos, placer, _itemstack, _pointed)
       local server = calandria.server.make(placer:get_player_name(), pos)
       calandria.server.placed[minetest.pos_to_string(pos)] = server
@@ -8,15 +6,16 @@ calandria.server = {
    end,
 
    make = function(player, pos)
-      local fs = orb.fs.empty()
-      orb.fs.seed(orb.fs.proxy(fs, "root", fs), {player})
-      local proc = orb.fs.mkdir(orb.fs.proxy(fs, "root", fs), "/proc/root")
+      local fs_raw = orb.fs.empty()
+      local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
+      orb.fs.seed(fs, {player})
+      local proc = orb.fs.mkdir(fs, "/proc/root")
       proc._group = "root"
 
       orb.process.spawn(fs, orb.shell.new_env("root"), "digi --daemon")
-      calandria.server.restore_digi(fs, orb.shell.new_env("root"), pos)
+      orb.process.restore_digi(fs, orb.shell.new_env("root"), pos)
 
-      return { fs = fs, sessions = {} }
+      return { fs = fs_raw, sessions = {} }
    end,
 
    session = function(pos, server, player, channel)
@@ -67,11 +66,15 @@ calandria.server = {
    path = minetest.get_worldpath() .. "/servers",
 
    load = function()
+      print("Loading...")
       local file = io.open(calandria.server.path, "r")
       if(file) then
          for k,fs in pairs(minetest.deserialize(file:read("*all"))) do
-            orb.process.restore_digi(fs)
+            print("Loading server at " .. k)
             calandria.server.placed[k] = { fs = fs, sessions = {} }
+            orb.process.restore_digi(orb.fs.proxy(fs, "root", fs),
+                                     orb.shell.new_env("root"),
+                                     minetest.string_to_pos(k))
          end
          file:close()
       else
@@ -80,9 +83,11 @@ calandria.server = {
    end,
 
    save = function()
+      print("Saving " .. orb.utils.size(calandria.server.placed))
       local file = io.open(calandria.server.path, "w")
       local filesystems = {}
       for k,v in pairs(calandria.server.placed) do
+         print("Saving server at " .. k)
          orb.fs.strip_special(v.fs)
          filesystems[k] = v.fs
       end
@@ -98,7 +103,7 @@ calandria.server = {
    end,
 }
 
-pcall(calandria.server.load)
+calandria.server.placed = calandria.server.placed or {}
 
 -- TODO: check to see if these have been loaded already:
 -- if(not minetest.registered_items["mod:item"]) then ...
@@ -138,3 +143,5 @@ minetest.register_abm({
       chance = 1,
       action = calandria.server.scheduler,
 })
+
+calandria.server.load()

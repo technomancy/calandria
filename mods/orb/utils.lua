@@ -71,4 +71,10 @@ orb.utils = {
       for _,v in pairs(t) do table.insert(vs, v) end
       return vs
    end,
+
+   size = function(t)
+      local n = 0
+      for _,_ in pairs(t) do n = n + 1 end
+      return n
+   end,
 }
