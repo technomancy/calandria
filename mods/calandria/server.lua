@@ -1,11 +1,9 @@
-local key_for = function(p) return "p" .. p.x .. "-" .. p.y .. "-" .. p.z end
-
 calandria.server = {
    placed = {},
 
    after_place = function(pos, placer, _itemstack, _pointed)
       local server = calandria.server.make(placer:get_player_name(), pos)
-      calandria.server.placed[key_for(pos)] = server
+      calandria.server.placed[minetest.pos_to_string(pos)] = server
       return server
    end,
 
@@ -16,9 +14,7 @@ calandria.server = {
       proc._group = "root"
 
       orb.process.spawn(fs, orb.shell.new_env("root"), "digi --daemon")
-      fs.digi.raw = function(channel, output)
-         digiline:receptor_send(pos, digiline.rules.default, channel, output)
-      end
+      calandria.server.restore_digi(fs, orb.shell.new_env("root"), pos)
 
       return { fs = fs, sessions = {} }
    end,
@@ -46,7 +42,7 @@ calandria.server = {
       if(type(msg) == "string") then
          local value = msg
          local player = "singleplayer"
-         local server = calandria.server.placed[key_for(pos)]
+         local server = calandria.server.placed[minetest.pos_to_string(pos)]
          if not server then
             print("Derp; no server. Creating a new one.") -- should never happen
             server = calandria.server.after_place(pos, {get_player_name =
@@ -95,7 +91,7 @@ calandria.server = {
    end,
 
    scheduler = function(pos, node, _active_object_count, _wider)
-      local server = calandria.server.placed[key_for(pos)]
+      local server = calandria.server.placed[minetest.pos_to_string(pos)]
       if server and server.fs and server.fs.proc then
          orb.process.scheduler(server.fs)
       end
