@@ -1,14 +1,28 @@
 -- this module is the glue tying together the orb mod (where the OS is
--- implemented) and game-engine-specific things like server nodes, digilines,
+-- implemented) and game-engine-specific things like server nodes, diginet,
 -- etc.
 
-calandria.server = {
-   after_place = function(pos, placer, _itemstack, _pointed)
-      local server = calandria.server.make(placer:get_player_name(), pos)
-      calandria.server.placed[minetest.pos_to_string(pos)] = server
-      return server
-   end,
+local new_session = function(pos, server, player, tty)
+   local env = orb.shell.new_env(player)
+   env.PROMPT = ""
+   local buffer = {}
+   env.write = function(output)
+      coroutine.yield()
+      diginet.send({ source=pos, destination=tty,
+                     method="tty", body=output })
+   end
+   env.read = function()
+      while #buffer == 0 do coroutine.yield() end
+      return table.remove(buffer, 1)
+   end
+   env.buffer_input = function(x)
+      table.insert(buffer, x)
+   end
+   server.sessions[player] = env
+   return env
+end
 
+calandria.server = {
    make = function(player, pos)
       local fs_raw = orb.fs.empty()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
@@ -22,49 +36,16 @@ calandria.server = {
       return { fs = fs_raw, sessions = {} }
    end,
 
-   session = function(pos, server, player, channel)
-      local env = orb.shell.new_env(player)
-      local buffer = {}
-      env.write = function(output)
-         coroutine.yield()
-         digiline:receptor_send(pos, digiline.rules.default, channel, output)
+   find = function(pos)
+      local server = calandria.server.placed[minetest.pos_to_string(pos)]
+      if not server then
+         print("Derp; no server. Creating a new one.") -- should never happen
+         server = calandria.server.after_place(pos, {get_player_name =
+                                                        function()
+                                                           return player
+         end})
       end
-      env.read = function()
-         while #buffer == 0 do coroutine.yield() end
-         return table.remove(buffer, 1)
-      end
-      env.buffer_input = function(x)
-         table.insert(buffer, x)
-      end
-      server.sessions[player] = env
-      return env
-   end,
-
-   digiline_action = function(pos, node, channel, msg)
-      -- TODO: fix for multiple users
-      if(type(msg) == "string") then
-         local value = msg
-         local player = "singleplayer"
-         local server = calandria.server.placed[minetest.pos_to_string(pos)]
-         if not server then
-            print("Derp; no server. Creating a new one.") -- should never happen
-            server = calandria.server.after_place(pos, {get_player_name =
-                                                           function()
-                                                              return player
-            end})
-         end
-
-         local session = server.sessions[player]
-         if(not session) then
-            local env = calandria.server.session(pos, server, player, channel)
-            -- since the input is in another formspec field, the
-            -- regular prompt makes no sense.
-            env.PROMPT = ""
-            local fs = orb.fs.proxy(server.fs, player, server.fs)
-            local co = orb.process.spawn(fs, env, "smash")
-         end
-         server.sessions[player].buffer_input(value)
-      end
+      return server
    end,
 
    path = minetest.get_worldpath() .. "/servers",
@@ -105,6 +86,47 @@ calandria.server = {
          orb.process.scheduler(server.fs)
       end
    end,
+
+   -- callbacks
+   after_place = function(pos, placer, _itemstack, _pointed)
+      local server = calandria.server.make(placer:get_player_name(), pos)
+      calandria.server.placed[minetest.pos_to_string(pos)] = server
+      return server
+   end,
+
+   on_destruct = function(pos)
+      table.remove(calandria.server.placed, minetest.pos_to_string(pos))
+   end,
+
+   on_tty = function(pos, packet)
+      local server = calandria.server.find(pos)
+      if(server) then
+         local session = server.sessions[packet.player]
+         if(session) then
+            session.buffer_input(value)
+         else
+            print("No session for " .. packet.player .. " on " ..
+                     minetest.pos_to_string(pos))
+         end
+      else
+         print("No server at " .. minetest.pos_to_string(pos))
+      end
+   end,
+
+   on_login = function(pos, packet)
+      local server = calandria.server.find(pos)
+      if(server) then
+         local env = new_session(pos, server, packet.player, packet.source)
+         local fs = orb.fs.proxy(server.fs, packet.player, server.fs)
+
+         orb.process.spawn(fs, env, "smash")
+
+         -- ignoring passwords for now woooooo
+         diginet.reply(packet, { method = "logged_in" })
+      else
+         print("No server at " .. minetest.pos_to_string(pos))
+      end
+   end,
 }
 
 calandria.server.placed = calandria.server.placed or {}
@@ -129,16 +151,11 @@ minetest.register_node("calandria:server", {
                               'cal_server_side.png', 'cal_server_side.png',
                               'cal_server_side.png', 'cal_server_front.png'},
                           groups = {dig_immediate = 2},
-                          -- sounds = default.node_sound_stone_defaults(),
-                          digiline = {
-                             receptor = {},
-                             effector = {
-                                action = calandria.server.digiline_action
-                             },
+                          diginet = { tty = calandria.server.on_tty,
+                                      login = calandria.server.on_login,
                           },
-                          after_place_node = calandria.server.after_place
-                          -- TODO: remove on destruct
-                          -- TODO: digiterms need to send destruct messages too
+                          after_place_node = calandria.server.after_place,
+                          on_destruct = calandria.server.on_destruct,
 })
 
 minetest.register_abm({

@@ -1,7 +1,14 @@
 -- Taken from digipad mod, but trimmed down to just the interactive terminal.
 -- Further changes include making it to work with higher-level diginet
 -- functionality instead of just digilines, increasing the size, and fixing
--- the interaction model so the window stays up.
+-- the interaction model so the window stays up. (hopefully)
+
+-- Diginet Flow
+
+-- 1. sends a method="login" packet with user/password fields to start session
+-- 2. receives method="logged_in", associates source address with player name
+-- 3. sends method="tty" with body field for input
+-- 4. receives method="tty" with body field for output
 
 local terminal_size = {10, 8}
 
@@ -27,7 +34,9 @@ calterm = {
 
    help = function(pos)  -- print help text
       calterm.new_line(pos, "Commands preceded with a / go to the terminal.")
-      calterm.new_line(pos, " All others are sent over diginet.")
+      calterm.new_line(pos, "All others are sent over diginet.")
+      calterm.new_line(pos, "You'll need to login to a server")
+      calterm.new_line(pos, "before you can send any commands.")
       calterm.new_line(pos, "Commands are:   /clear /help /login")
    end,
 
@@ -37,15 +46,15 @@ calterm = {
       meta:set_int("lines", 0)  -- start at the top of the screen again
    end,
 
-   login = function(pos, args)
+   login = function(pos, player, args)
       local dest, user, password = unpack(args)
       diginet.send({ source = pos, destination = dest, method = "login",
-                     user = user, password = password })
+                     player = player, user = user, password = password })
    end,
 
    -- internals
 
-   parse_cmd = function(pos, cmd)
+   parse_cmd = function(pos, player, cmd)
       local tokens = split(cmd, " +")
       if cmd == "clear" then
          calterm.clear(pos)
@@ -53,7 +62,7 @@ calterm = {
          calterm.help(pos)
       elseif tokens[1] == "login" then
          table.remove(tokens, 1)
-         calterm.login(pos, tokens)
+         calterm.login(pos, player, tokens)
       else
          calterm.new_line(pos, cmd .. ": command not found")
       end
@@ -83,8 +92,8 @@ calterm = {
       meta:set_string("formspec", new_formspec)
 
       -- If not all could be printed, recurse on the rest of the string
-      if string.len(text) > max_chars then
-         text = string.sub(text,max_chars)
+      if text:len() > max_chars then
+         text = text:sub(max_chars)
          calterm.new_line(pos, text)
       end
    end,
@@ -103,19 +112,20 @@ calterm = {
    on_receive_fields = function(pos, formname, fields, sender)
       local meta = minetest.env:get_meta(pos)
       local text = fields.input
+      local player = sender:get_player_name()
 
       if text ~= nil then
          calterm.new_line(pos, "> " .. text)
-         local session_dest = meta:get_string("session_" .. sender)
+         local session_dest = meta:get_string("session_" .. player)
 
-         if string.sub(text,1,1) == "/" then  -- command is for terminal
-            calterm.parse_cmd(pos, string.sub(text, 2))
+         if text:sub(1,1) == "/" then  -- command is for terminal
+            calterm.parse_cmd(pos, player, text:sub(2))
          elseif(session_dest) then
-            local dest = meta:get_string("session_" .. sender)
-            diginet.send({ source = minetest.pos_to_string(pos),
-                           destination = dest, method = "tty", body = text })
+            diginet.send({ source = pos, destination = session_dest,
+                           player = player, method = "tty", body = text })
          else
-            calterm.new_line(pos, "Not logged in; try /login SERVER USER PASSWORD")
+            calterm.new_line(pos, "Not logged in;" ..
+                                " try /login SERVER USER PASSWORD")
          end
       end
       -- TODO: don't close terminal when enter is pressed
@@ -127,7 +137,8 @@ calterm = {
 
    on_logged_in = function(pos, packet)
       local meta = minetest.env:get_meta(pos)
-      meta:set_string("session_" .. packet.user)
+      meta:set_string("session_" .. packet.player, packet.source)
+      calterm.new_line(pos, "Logged in.")
    end,
 }
 
