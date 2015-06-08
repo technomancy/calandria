@@ -21,7 +21,7 @@ while true do
       env.CWD = orb.normalize(change_dir, env.CWD)
    elseif(var) then
       env[var] = value
-   else
+   elseif(not input:match("^ *$")) then
       local success, msg = orb.pexec(f, env, input)
       if(not success) then
          print(msg)

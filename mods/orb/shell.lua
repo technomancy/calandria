@@ -69,7 +69,7 @@ orb.shell = {
       for _, d in pairs(orb.utils.split(env.PATH, ":")) do
          local executable_path = d .. "/" .. executable_name
          local executable = f[orb.fs.normalize(executable_path, env.CWD)]
-         if(executable) then
+         if(type(executable) == "string") then
             local chunk = assert(loadstring(executable))
             setfenv(chunk, orb.shell.sandbox(f, env))
             return chunk(f, env, args)
