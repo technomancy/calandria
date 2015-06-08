@@ -49,3 +49,29 @@ methods which the given node will respond.
 Replying to pings will be handled by the diginet library as long as
 you define all your packet handlers declaratively so that diginet can
 calculate the methods with which to respond.
+
+## Error handlers
+
+Needs a callback for what happens if the source does not exist.
+
+## API
+
+(Not yet implemented.)
+
+Send diginet messages using `diginet.send`:
+
+    diginet.send({ source="12,700,1", destination="19,21,86",
+                   method="post", body="hi"})
+
+Set up your handlers to receive messages by including a `diginet`
+field in your call to `minetest.register_node`:
+
+    minetest.register_node("hello:world", { description = "hello block",
+                                            ...
+                                            diginet = {
+                                              post = mymod.on_post,
+                                              open = mymod.on_open,
+                                            }}
+
+The handler function will receive a `pos` argument for the node in
+question as well as a `packet` argument with the packet table.
