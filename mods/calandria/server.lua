@@ -1,3 +1,7 @@
+-- this module is the glue tying together the orb mod (where the OS is
+-- implemented) and game-engine-specific things like server nodes, digilines,
+-- etc.
+
 calandria.server = {
    after_place = function(pos, placer, _itemstack, _pointed)
       local server = calandria.server.make(placer:get_player_name(), pos)
