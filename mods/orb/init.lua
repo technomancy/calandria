@@ -1,9 +1,8 @@
 -- a fake lil' OS
 
-orb = {
+orb = _G.orb or {
    mod_dir = (minetest and minetest.get_modpath("orb")) or
-      debug.getinfo(1,"S").source:sub(2, -9):gsub("(/+)$", "/"),
-}
+      debug.getinfo(1,"S").source:sub(2, -9):gsub("(/+)$", "/") }
 
 if(orb.mod_dir == "") then orb.mod_dir = "." end
 
