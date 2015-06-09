@@ -33,6 +33,7 @@ calandria.server = {
       orb.process.spawn(fs, orb.shell.new_env("root"), "digi --daemon")
       orb.process.restore_digi(fs, orb.shell.new_env("root"), pos)
 
+      -- TODO: move sessions to metadata
       return { fs = fs_raw, sessions = {} }
    end,
 
@@ -94,16 +95,17 @@ calandria.server = {
       return server
    end,
 
-   on_destruct = function(pos)
-      table.remove(calandria.server.placed, minetest.pos_to_string(pos))
-   end,
+   -- TODO: this crashes
+   -- on_destruct = function(pos)
+   --    table.remove(calandria.server.placed, minetest.pos_to_string(pos))
+   -- end,
 
    on_tty = function(pos, packet)
       local server = calandria.server.find(pos)
       if(server) then
          local session = server.sessions[packet.player]
          if(session) then
-            session.buffer_input(value)
+            session.buffer_input(packet.body)
          else
             print("No session for " .. packet.player .. " on " ..
                      minetest.pos_to_string(pos))

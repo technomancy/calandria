@@ -69,8 +69,8 @@ calterm = {
    end,
 
    new_line = function(pos, text)
-      local max_chars = calterm.terminal_size[1] * 8
-      local max_lines = calterm.terminal_size[2] * 4
+      local max_chars = terminal_size[1] * 8
+      local max_lines = (terminal_size[2] * 4) - 1
       local meta = minetest.env:get_meta(pos)
       local lines = meta:get_int("lines")
 
@@ -117,15 +117,13 @@ calterm = {
       if text ~= nil then
          calterm.new_line(pos, "> " .. text)
          local session_dest = meta:get_string("session_" .. player)
-
          if text:sub(1,1) == "/" then  -- command is for terminal
             calterm.parse_cmd(pos, player, text:sub(2))
-         elseif(session_dest) then
+         elseif(session_dest ~= "") then
             diginet.send({ source = pos, destination = session_dest,
                            player = player, method = "tty", body = text })
          else
-            calterm.new_line(pos, "Not logged in;" ..
-                                " try /login SERVER USER PASSWORD")
+            calterm.new_line(pos, "Not logged in, try /login SERVER USER PASSWORD")
          end
       end
       -- TODO: don't close terminal when enter is pressed
@@ -135,9 +133,14 @@ calterm = {
       calterm.new_line(pos, packet.body)
    end,
 
+   on_error = function(pos, packet)
+      calterm.new_line(pos, "! " .. packet.body)
+   end,
+
    on_logged_in = function(pos, packet)
       local meta = minetest.env:get_meta(pos)
-      meta:set_string("session_" .. packet.player, packet.source)
+      meta:set_string("session_" .. packet.player,
+                      minetest.pos_to_string(packet.source))
       calterm.new_line(pos, "Logged in.")
    end,
 }
@@ -172,6 +175,7 @@ minetest.register_node("calterm:terminal", {
                           },
                           diginet = { tty = calterm.on_tty,
                                       logged_in = calterm.on_logged_in,
+                                      error = calterm.on_error
                           },
                           groups = {dig_immediate = 2},
                           on_construct = calterm.on_construct,

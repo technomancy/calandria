@@ -75,3 +75,8 @@ field in your call to `minetest.register_node`:
 
 The handler function will receive a `pos` argument for the node in
 question as well as a `packet` argument with the packet table.
+
+There is also a `diginet.reply` function which is simply a convenience
+wrapper around `diginet.send` which takes an original packet and a
+response packet, and sets the `source`, `destination`, `player`, and
+`in_reply_to` fields on the response, and sends it.
