@@ -1,6 +1,6 @@
 -- a fake lil' OS
 
-orb = _G.orb or {
+orb = orb or {
    mod_dir = (minetest and minetest.get_modpath("orb")) or
       debug.getinfo(1,"S").source:sub(2, -9):gsub("(/+)$", "/") }
 
@@ -15,17 +15,17 @@ dofile(orb.mod_dir .. "/process.lua")
 -- for interactive use, but also as a sample of how the API works:
 if(arg) then
    -- start with an empty filesystem
-   f = orb.fs.empty()
-   f0 = orb.fs.seed(orb.fs.proxy(f, "root", f),
+   f_raw = orb.fs.new_raw()
+   f0 = orb.fs.seed(orb.fs.proxy(f_raw, "root", f_raw),
                     {"technomancy", "buddyberg", "zacherson"})
-   f1 = orb.fs.proxy(f, "technomancy", f)
+   f1 = orb.fs.proxy(f_raw, "technomancy", f_raw)
    e0 = orb.shell.new_env("root")
    e1 = orb.shell.new_env("technomancy")
 
    co = orb.process.spawn(f1, e1, "smash") -- Open an interactive shell
    -- till we have non-blocking io.read, the scheduler isn't going to do jack
    -- when run from regular stdin
-   while coroutine.status(co) ~= "dead" do orb.process.scheduler(f) end
+   while coroutine.status(co) ~= "dead" do orb.process.scheduler(f0) end
 
    -- tests
    t_groups = orb.shell.groups(f0, "technomancy")

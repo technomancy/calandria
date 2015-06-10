@@ -42,6 +42,7 @@ local nodes_for = function(address)
 end
 
 diginet = {
+   -- Send a packet over diginet. Required fields: source, destination, method.
    send = function(packet)
       normalize(packet)
       print("Sending " .. minetest.serialize(packet))
@@ -61,7 +62,24 @@ diginet = {
       end
    end,
 
+   -- Send a packet in response to an original packet. Packet sent will have
+   -- source, destination, and player/in_reply_to (if applicable) calculated
+   -- from original packet.
    reply = function(original, reply_packet)
       diginet.send(reply_to(original, reply_packet))
    end,
+
+   -- Return a function that will send a specified packet with a few fields
+   -- overridden which are accepted as args to that function.
+   partial = function(packet, fields)
+      local packet_str = minetest.serialize(packet)
+      return function(...)
+         local values = {...}
+         local p2 = minetest.deserialize(packet_str)
+         for i,f in ipairs(fields) do
+            p2[f] = values[i]
+         end
+         diginet.send(p2)
+      end
+   end
 }

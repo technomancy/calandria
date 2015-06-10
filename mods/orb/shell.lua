@@ -22,35 +22,33 @@ orb.shell = {
       local t = table.remove(tokens, 1)
       while t do
          if(t == "<") then
-            local file = f[orb.fs.normalize(tokens[1], env.CWD)]
-            local lines = orb.utils.split(file, "\n")
-            env.read = function() return table.remove(lines, 1) end
+            env.IN = orb.fs.normalize(tokens[1], env.CWD)
             break
          elseif(t == ">") then
             local target = table.remove(tokens, 1)
             target = orb.fs.normalize(target, env.CWD)
             local dir, base = orb.fs.dirname(target)
             if(type(f[dir][base]) == "string") then f[dir][base] = "" end
-            env.write = orb.utils.partial(orb.fs.write, f, target)
+            env.OUT = target
             break
          elseif(t == ">>") then
             local target = table.remove(tokens, 1)
-            target = orb.fs.normalize(target, env.CWD)
-            env.write = orb.utils.partial(orb.fs.write, f, target)
+            env.OUT = orb.fs.normalize(target, env.CWD)
             break
-         elseif(t == "|") then
-            -- TODO: support pipelines of arbitrary length
-            local env2 = orb.utils.shallow_copy(env)
-            local buffer = {}
-            env2.read = function()
-               while #buffer == 0 do coroutine.yield() end
-               return table.remove(buffer, 1)
-            end
-            env.write = function(output)
-               table.insert(buffer, output)
-            end
-            local co = orb.process.spawn(f, env, table.concat(tokens, " "))
-            break
+         -- elseif(t == "|") then
+         --    -- TODO: support pipelines of arbitrary length
+         --    -- TODO: IN and OUT as buffer tables?
+         --    local env2 = orb.utils.shallow_copy(env)
+         --    local buffer = {}
+         --    env2.read = function()
+         --       while #buffer == 0 do coroutine.yield() end
+         --       return table.remove(buffer, 1)
+         --    end
+         --    env.write = function(output)
+         --       table.insert(buffer, output)
+         --    end
+         --    local co = orb.process.spawn(f, env, table.concat(tokens, " "))
+         --    break
          else
             table.insert(args, t)
          end
@@ -86,8 +84,8 @@ orb.shell = {
    -- Set up the sandbox in which code runs. Need to avoid exposing anything
    -- that could allow security leaks.
    sandbox = function(f, env)
-      local read = function(...) return env.read(...) end
-      local write = function(...) return env.write(...) end
+      local read = function(...) return orb.fs.read(f, env.IN) end
+      local write = function(...) return orb.fs.write(f, env.OUT, ...) end
 
       return { orb = { utils = orb.utils,
                        dirname = orb.fs.dirname,
@@ -95,8 +93,8 @@ orb.shell = {
                        mkdir = orb.fs.mkdir,
                        exec = orb.shell.exec,
                        pexec = orb.shell.pexec,
-                       read = orb.fs.read,
-                       write = orb.fs.write,
+                       read = orb.utils.partial(orb.fs.read, f),
+                       write = orb.utils.partial(orb.fs.write, f),
                        append = orb.fs.append,
                        reload = orb.fs.reloaders[f],
                      },

@@ -37,19 +37,4 @@ orb.process = {
          end
       end
    end,
-
-   -- When restoring an fs from serialization, we have to repopulate special
-   -- nodes in the fs that were not serializable.
-   restore_digi = function(f, env, pos)
-      for k,v in orb.utils.mtpairs(f.digi) do
-         local channel_dir = "/digi/" .. k
-         if(type(v) == "table") then
-            orb.shell.exec(f, env, "mkfifo " .. channel_dir .. "/in")
-            orb.shell.exec(f, env, "mkfifo " .. channel_dir .. "/out")
-         end
-      end
-      f.digi.raw = function(channel, output)
-         digiline:receptor_send(pos, digiline.rules.default, channel, output)
-      end
-   end,
 }

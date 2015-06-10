@@ -2,14 +2,16 @@
 orb.fs = {
 
    -- This gives us a raw filesystem that's just a table with permissions data
-   empty = function()
+   new_raw = function()
       return {_user = "root", _group = "all", proc = {
                  _user = "root", _group = "all"
       }}
    end,
 
    mkdir = function(f, path, env)
-      local dir, base = orb.fs.dirname(orb.fs.normalize(path, env and env.CWD))
+      assert(f and path)
+      if(path == "/") then return end
+      local dir,base = orb.fs.dirname(orb.fs.normalize(path, env and env.CWD))
       local parent = f[dir]
 
       if(not parent) then orb.fs.mkdir(f, dir, env) end
@@ -66,10 +68,11 @@ orb.fs = {
    add_user = function(f, user)
       local home = "/home/" .. user
       orb.fs.mkdir(f, home)
-      orb.fs.add_to_group(f, user, user)
-      orb.fs.add_to_group(f, user, "all")
       f[home]._user = user
       f[home]._group = user
+      orb.fs.mkdir(f, home .. "/diginet")
+      orb.fs.add_to_group(f, user, user)
+      orb.fs.add_to_group(f, user, "all")
       orb.fs.mkdir(f, "/proc/" .. user)
       f.proc[user]._user = user
       f.proc[user]._group = user
@@ -115,7 +118,6 @@ orb.fs = {
                                        grep = "/bin/grep",
                                        reload = "/bin/reload",
                                        mkfifo = "/bin/mkfifo",
-                                       digi = "/bin/digi",
       }) do
          orb.fs.copy_to_fs(f, fs_path, real_path)
       end
@@ -123,14 +125,13 @@ orb.fs = {
 
    -- Load up an empty filesystem.
    seed = function(f, users)
-      for _,d in pairs({"/etc", "/home", "/tmp", "/bin", "/digi"}) do
+      for _,d in pairs({"/etc", "/home", "/tmp", "/bin"}) do
          orb.fs.mkdir(f, d)
          f[d]._group = "all"
       end
 
       orb.fs.mkdir(f, "/etc/groups")
       f["/tmp"]._group_write = "true"
-      f["/digi"]._group_write = "true"
 
       for _,user in pairs(users) do
          orb.fs.add_user(f, user)

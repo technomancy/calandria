@@ -2,39 +2,41 @@
 -- implemented) and game-engine-specific things like server nodes, diginet,
 -- etc.
 
-local new_session = function(pos, server, player, tty)
-   local env = orb.shell.new_env(player)
+local diginet_dir = function(user, address)
+   return "/home/" .. user .. "/diginet/" .. address
+end
+
+local session_name = function(player, term)
+   return player .. ":" .. term
+end
+
+local new_session_env = function(pos, server, player, user, address)
+   local env = orb.shell.new_env(user)
+   local fs = orb.fs.proxy(server.fs_raw, user, server.fs_raw)
+   local dir = diginet_dir(user, address)
+   orb.fs.mkdir(fs, dir, env)
    env.PROMPT = ""
-   local buffer = {}
-   env.write = function(output)
-      coroutine.yield()
-      diginet.send({ source=pos, destination=tty,
-                     method="tty", body=output })
-   end
-   env.read = function()
-      while #buffer == 0 do coroutine.yield() end
-      return table.remove(buffer, 1)
-   end
-   env.buffer_input = function(x)
-      table.insert(buffer, x)
-   end
-   server.sessions[player] = env
+   env.IN = dir .. "/in"
+   env.OUT = dir .. "/out"
+
+   orb.shell.exec(fs, env, "mkfifo " .. env.IN)
+   fs[env.OUT] = diginet.partial({source=pos, destination=address,
+                                  method="tty"}, {"body"})
+
+   server.sessions[session_name(player, address)] = env
    return env
 end
 
 calandria.server = {
    make = function(player, pos)
-      local fs_raw = orb.fs.empty()
+      local fs_raw = orb.fs.new_raw()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
       orb.fs.seed(fs, {player})
       local proc = orb.fs.mkdir(fs, "/proc/root")
       proc._group = "root"
 
-      orb.process.spawn(fs, orb.shell.new_env("root"), "digi --daemon")
-      orb.process.restore_digi(fs, orb.shell.new_env("root"), pos)
-
       -- TODO: move sessions to metadata
-      return { fs = fs_raw, sessions = {} }
+      return { fs_raw = fs_raw, sessions = {} }
    end,
 
    find = function(pos)
@@ -58,9 +60,6 @@ calandria.server = {
          for k,fs in pairs(minetest.deserialize(file:read("*all"))) do
             print("Loading server at " .. k)
             calandria.server.placed[k] = { fs = fs, sessions = {} }
-            orb.process.restore_digi(orb.fs.proxy(fs, "root", fs),
-                                     orb.shell.new_env("root"),
-                                     minetest.string_to_pos(k))
          end
          file:close()
       else
@@ -74,8 +73,8 @@ calandria.server = {
       local filesystems = {}
       for k,v in pairs(calandria.server.placed) do
          print("Saving server at " .. k)
-         orb.fs.strip_special(v.fs)
-         filesystems[k] = v.fs
+         orb.fs.strip_special(v.fs_raw)
+         filesystems[k] = v.fs_raw
       end
       file:write(minetest.serialize(filesystems))
       file:close()
@@ -83,8 +82,8 @@ calandria.server = {
 
    scheduler = function(pos, node, _active_object_count, _wider)
       local server = calandria.server.placed[minetest.pos_to_string(pos)]
-      if server and server.fs and server.fs.proc then
-         orb.process.scheduler(server.fs)
+      if server and server.fs_raw and server.fs_raw.proc then
+         orb.process.scheduler(server.fs_raw)
       end
    end,
 
@@ -103,9 +102,15 @@ calandria.server = {
    on_tty = function(pos, packet)
       local server = calandria.server.find(pos)
       if(server) then
-         local session = server.sessions[packet.player]
+         local session_name = session_name(packet.player,
+                                           minetest.pos_to_string(packet.source))
+         local session = server.sessions[session_name]
          if(session) then
-            session.buffer_input(packet.body)
+            -- TODO: cache proxies
+            local fs = orb.fs.proxy(server.fs_raw, "root", server.fs_raw)
+            local in_function = fs[session.IN]
+            assert(in_function, "Missing session input file.")
+            in_function(packet.body)
          else
             print("No session for " .. packet.player .. " on " ..
                      minetest.pos_to_string(pos))
@@ -118,8 +123,9 @@ calandria.server = {
    on_login = function(pos, packet)
       local server = calandria.server.find(pos)
       if(server) then
-         local env = new_session(pos, server, packet.player, packet.source)
-         local fs = orb.fs.proxy(server.fs, packet.player, server.fs)
+         local env = new_session_env(pos, server, packet.player, packet.user,
+                                     minetest.pos_to_string(packet.source))
+         local fs = orb.fs.proxy(server.fs_raw, packet.player, server.fs_raw)
 
          orb.process.spawn(fs, env, "smash")
 
