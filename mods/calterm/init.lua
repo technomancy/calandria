@@ -91,6 +91,7 @@ calterm = {
       lines = lines + #lines_split
       meta:set_int("lines", lines)
       -- TODO: preserve input upon text insertion
+      -- may actually be impossible in minetest?
       meta:set_string("formspec", new_formspec)
 
       -- If not all could be printed, recurse on the rest of the string

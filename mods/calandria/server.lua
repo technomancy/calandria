@@ -7,7 +7,14 @@ local diginet_dir = function(user, address)
 end
 
 local session_name = function(player, term)
-   return player .. ":" .. term
+   return "session:" .. player .. ":" .. term
+end
+
+local create_io_fifos = function(env, fs, pos, address)
+   orb.shell.exec(fs, env, "mkfifo " .. env.IN)
+   fs[env.OUT] = diginet.partial({source=pos, destination=address,
+                                  method="tty"}, {"body"})
+
 end
 
 local new_session_env = function(pos, server, player, user, address)
@@ -19,9 +26,7 @@ local new_session_env = function(pos, server, player, user, address)
    env.IN = dir .. "/in"
    env.OUT = dir .. "/out"
 
-   orb.shell.exec(fs, env, "mkfifo " .. env.IN)
-   fs[env.OUT] = diginet.partial({source=pos, destination=address,
-                                  method="tty"}, {"body"})
+   create_io_fifos(env, fs, pos, address)
 
    server.sessions[session_name(player, address)] = env
    return env
@@ -29,13 +34,13 @@ end
 
 calandria.server = {
    make = function(player, pos)
+      -- TODO: set infotext
       local fs_raw = orb.fs.new_raw()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
       orb.fs.seed(fs, {player})
       local proc = orb.fs.mkdir(fs, "/proc/root")
       proc._group = "root"
 
-      -- TODO: move sessions to metadata
       return { fs_raw = fs_raw, sessions = {} }
    end,
 
@@ -56,27 +61,31 @@ calandria.server = {
    load = function()
       print("Loading...")
       local file = io.open(calandria.server.path, "r")
-      if(file) then
-         for k,fs in pairs(minetest.deserialize(file:read("*all"))) do
-            print("Loading server at " .. k)
-            calandria.server.placed[k] = { fs = fs, sessions = {} }
+      local contents = file and file:read("*all")
+      file:close()
+      if(file and contents ~= "") then
+         calandria.server.placed = minetest.deserialize(contents)
+         for pos_str,server in pairs(calandria.server.placed) do
+            for session_name, env in pairs(server.sessions) do
+               local fs = orb.fs.proxy(server.fs_raw, env.USER, server.fs_raw)
+               local dir, base = orb.fs.dirname(session_name)
+               local tty_address = orb.utils.split(base, ":")[3]
+               create_io_fifos(env, fs, pos_str, tty_address)
+               -- can't restore all processes; at least we get a shell back
+               orb.process.spawn(fs, env, "smash")
+            end
          end
-         file:close()
       else
          return {}
       end
    end,
 
    save = function()
-      print("Saving " .. orb.utils.size(calandria.server.placed))
-      local file = io.open(calandria.server.path, "w")
-      local filesystems = {}
-      for k,v in pairs(calandria.server.placed) do
-         print("Saving server at " .. k)
-         orb.fs.strip_special(v.fs_raw)
-         filesystems[k] = v.fs_raw
+      for pos,server in pairs(calandria.server.placed) do
+         orb.fs.strip_special(server.fs_raw)
       end
-      file:write(minetest.serialize(filesystems))
+      local file = io.open(calandria.server.path, "w")
+      file:write(minetest.serialize(calandria.server.placed))
       file:close()
    end,
 

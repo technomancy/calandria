@@ -6,9 +6,6 @@ orb.shell = {
       -- TODO: protected env: shouldn't be allowed to change USER
       return { PATH = "/bin", PROMPT = "${CWD} $ ", SHELL = "/bin/smash",
                CWD = home, HOME = home, USER = user,
-               -- TODO: need a non-blocking read; look into posix.rpoll
-               -- https://luaposix.github.io/luaposix/modules/posix.poll.html
-               read = io.read, write = io.write
       }
    end,
 
