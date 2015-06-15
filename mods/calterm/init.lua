@@ -92,7 +92,6 @@ calterm = {
       meta:set_int("lines", lines)
       -- TODO: preserve input upon text insertion
       -- may actually be impossible in minetest?
-      meta:set_string("formspec", new_formspec)
 
       -- If not all could be printed, recurse on the rest of the string
       if text:len() > max_chars then
@@ -129,7 +128,8 @@ calterm = {
             calterm.new_line(pos, "Not logged in, try /login SERVER USER PASSWORD")
          end
       end
-      -- TODO: don't close terminal when enter is pressed
+      minetest.show_formspec(sender:get_player_name(), "terminal",
+                             meta:get_string("formspec"))
    end,
 
    on_tty = function(pos, packet)
