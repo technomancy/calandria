@@ -111,25 +111,38 @@ calterm = {
       calterm.new_line(pos, "/help for help")  -- print welcome text
    end,
 
-   on_receive_fields = function(pos, formname, fields, sender)
+   on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+      minetest.show_formspec(player:get_player_name(), "calterm",
+                             meta:get_string("formspec"))
+   end,
+
+   on_input = function(player, formname, fields)
+      if(formname ~= "calterm") then return end
+      if(fields.quit) then return true end
+
       local meta = minetest.env:get_meta(pos)
       local text = fields.input
-      local player = sender:get_player_name()
+      local player_name = player:get_player_name()
 
-      if text ~= nil then
+      if(text) then
          calterm.new_line(pos, "> " .. text)
-         local session_dest = meta:get_string("session_" .. player)
+         local session_dest = meta:get_string("session_" .. player_name)
          if text:sub(1,1) == "/" then  -- command is for terminal
             calterm.parse_cmd(pos, player, text:sub(2))
          elseif(session_dest ~= "") then
             diginet.send({ source = pos, destination = session_dest,
-                           player = player, method = "tty", body = text })
+                           player = player_name, method = "tty", body = text })
          else
             calterm.new_line(pos, "Not logged in, try /login SERVER USER PASSWORD")
          end
+
+         minetest.after(0.1, function()
+                           minetest.show_formspec(player_name,
+                                                  formname,
+                                                  meta:get_string("formspec"))
+         end)
+         return true
       end
-      minetest.show_formspec(sender:get_player_name(), "terminal",
-                             meta:get_string("formspec"))
    end,
 
    on_tty = function(pos, packet)
@@ -145,8 +158,7 @@ calterm = {
       meta:set_string("session_" .. packet.player,
                       minetest.pos_to_string(packet.source))
       calterm.new_line(pos, "Logged in.")
-   end,
-}
+   end,}
 
 minetest.register_node("calterm:terminal", {
                           description = "Interactive Terminal",
@@ -182,5 +194,7 @@ minetest.register_node("calterm:terminal", {
                           },
                           groups = {dig_immediate = 2},
                           on_construct = calterm.on_construct,
-                          on_receive_fields = calterm.on_receive_fields,
+                          on_rightclick = calterm.on_rightclick,
 })
+
+minetest.register_on_player_receive_fields(calterm.on_input)
