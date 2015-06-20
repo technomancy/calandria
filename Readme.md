@@ -261,7 +261,7 @@ connecting multiple terminals to a single server.
 
 ## Philosophy
 
-In his book
+In his 1980 book
 [Mindstorms](https://www.goodreads.com/book/show/703532.Mindstorms),
 Seymour Papert describes what he calls "Piagetian learning", which is
 the process whereby children acquire language at a young age without
@@ -292,7 +292,7 @@ great effect) children now are already immersed in computer
 environments without needing one to be introduced by educators. The
 purpose of this project is take a voxel exploration game and turn it
 into an environment which better serves to encourage Piagetian
-learning.
+learning, particularly about Unix and introductory programming.
 
 ## Prior Art
 
@@ -305,15 +305,17 @@ OS is single-user.
 
 [DroneTest](https://github.com/ninnghazad/dronetest) has programmable
 computer nodes as well as drone entities that can move
-around. However, it does all its output by generating textures for the
+around, but it does all its output by generating textures for the
 display node every time it needs to change, and the Minetest engine
 does not garbage collect old images. This means every DroneTest game
 will eventually run out of memory. In addition, it does not implement
-a terminal, relying instead on line-by-line commands. Plus I couldn't
-get it working on my own machine. Also: the name is cringe-worthy.
+a terminal, relying instead on line-by-line commands. Also: the name
+is cringe-worthy.
 
 [Hoverbot](https://github.com/Pilcrow182/hoverbot) is another
-programmable robot mod.
+programmable robot mod which uses visual drag-and-drop programming
+similar to Scratch, but without loops or any higher-level features
+than imperative commands.
 
 [A Minetest pull request](https://github.com/minetest/minetest/pull/1737)
 implements the ability to accept character-based input instead of
