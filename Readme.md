@@ -26,16 +26,15 @@ Create a new world in Creative mode. It will spawn you in a world with
 a single block to stand on; you can build a ship out from there.
 
 In order to start using the OS, you'll need to place a server block
-first. Then place a terminal near it. Connect them with digilines, and
-then right-click on the term. At that point you can enter commands in
-the bottom and hit submit. Output should start showing up in the top
-pane, but
-[very slowly](https://github.com/technomancy/calandria/issues/18).
+first. Then place a terminal near it. Right-click on the terminal and
+log in to the server using `/login (10,1,5) username` where the second
+argument is the position of the server you've placed. At that point
+you can enter shell commands.
 
 There's also an unfinished
 [pre-made world you can use](http://p.hagelb.org/calandria-ship.tar.gz).
 
-You can use the OS from the CLI as well:
+You can use the OS from the CLI outside the game as well:
 
 ```
 $ lua mods/orb/init.lua
@@ -161,7 +160,7 @@ Other shell features
 * [x] sandbox scripts (limited api access)
 * [x] enforce access controls in the filesystem
 * [x] input/output redirection
-* [x] pipes
+* [ ] pipes (half-implemented)
 * [ ] globs
 * [ ] env var interpolation
 * [ ] quoting in shell args
@@ -194,22 +193,24 @@ commands work similarly as to unix, but `chmod` simply takes a `+` or
 indicated simply by an entry in the `/etc/groups/$GROUP` directory
 named after the username.
 
-Rather than traditional stdio, here we have input and output modeled
-as `read` and `write` functions inside the environment table (rather
-than in the `/dev` directory). There is no stderr. Due to limitations
+Rather than traditional stdio kept in `/dev/`, here we have `IN` and
+`OUT` filenames kept in the environment, and `read` and `write`
+default to using these. There is no stderr. Due to limitations
 in the engine, there is no character-by-character IO; it is only full
 strings (usually a whole line) at a time that are passed to `write` or
 returned from `read`. The sandbox in which scripts run have `print`,
 `io.write`, and `io.read` redefined to these functions; when a session
-is initiated over digilines it's up to the node definition to set
-`read` and `write` in the environment to functions which move the data
-to and from digiline channels.
+is initiated over the terminal it's up to the node definition to set
+`IN` and `OUT` in the environment to functions which move the data
+to and from the terminal's connection.
 
 Of course, all scripts are written in Lua. Filesystem, the environment
 table, and CLI args are exposed as `...`, so scripts typically start
 with `local f, env, args = ...`. Filesystem access is simply table
 access, though the table you're given is a proxy table that enforces
-permissions with Lua metamethods.
+permissions with Lua metamethods. Regular files in the filesystem are
+just strings in a table, and special nodes (like named pipes) are
+functions.
 
 Servers can have multiple processes running at once, but the shell
 does not support multiplexing, so this is only possible through
@@ -230,11 +231,10 @@ connecting multiple terminals to a single server.
 
 ### Electronic
 
-* [ ] Computers
-* [ ] Terminals
-* [ ] Drives? (or the computer has an inventory)
-* [x] Switches (use mesecons)
-* [x] buttons (use mesecons)
+* [x] Computers
+* [x] Terminals
+* [ ] Switches
+* [ ] buttons
 * [x] Wires (use mesecons)
 * [ ] Indicators (light up when power/signal is on)
 * [ ] Analog meters (shows how powerful a signal is)
@@ -257,13 +257,42 @@ connecting multiple terminals to a single server.
 * [ ] Ladders
 * [ ] Coolant (liquid)
 
-* [ ] Remove non-space blocks (axes, dirt, etc)
+* [x] Remove non-space blocks (axes, dirt, etc)
 
-## New items
+## Philosophy
 
-* Private key
-* Public key
-* Power cells
+In his book
+[Mindstorms](https://www.goodreads.com/book/show/703532.Mindstorms),
+Seymour Papert describes what he calls "Piagetian learning", which is
+the process whereby children acquire language at a young age without
+any formal instruction. Papert posits that cultures can teach certain
+topics effortlessly as long as the culture is rich in concepts a
+learner can appropriate and use to model the topic in their head, and
+that classroom learning is introduced when the culture fails to
+provide the means necessary to learn important topics.
+
+The focus of his book is how the presence of a computer can provide
+conceptual "materials" suitable for the construction of the kinds of
+models that make acquiring mathematical knowledge come as naturally as
+learning French comes to a child growing up in France; in fact the
+metaphor of "growing up in Mathland" serves to illustrate how topics
+which seem difficult when taught in a classroom setting can be learned
+effortlessly when the surrounding culture provides the necessary
+building blocks of knowledge.
+
+The book describes labs in which children learn using
+[Logo](https://en.wikipedia.org/wiki/Logo_%28programming_language%29),
+a language allowing them to draw patterns on the screen by programming
+a "turtle" avatar's motions. The turtle and its commands function as a
+particularly apt source from which to build models of many aspects of
+computation and mathematics, as he repeatedly demonstrates.
+
+While this was groundbreaking at the time (and can still be used to
+great effect) children now are already immersed in computer
+environments without needing one to be introduced by educators. The
+purpose of this project is take a voxel exploration game and turn it
+into an environment which better serves to encourage Piagetian
+learning.
 
 ## Prior Art
 
