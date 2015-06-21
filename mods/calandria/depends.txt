@@ -1,4 +1,0 @@
-orb
-digilines
-diginet
-calterm

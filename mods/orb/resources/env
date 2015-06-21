@@ -1,9 +1,0 @@
--- -*- lua -*-
-
-local f, env, args = ...
-
-for k,v in pairs(env) do
-   if(type(v) == "string") then
-      print(k .. "=" ..v)
-   end
-end
