@@ -94,6 +94,7 @@ calandria.term = {
       meta:set_int("lines", lines)
       -- TODO: preserve input upon text insertion
       -- may actually be impossible in minetest?
+      meta:set_string("formspec", new_formspec)
 
       -- If not all could be printed, recurse on the rest of the string
       if text:len() > max_chars then
@@ -195,8 +196,6 @@ minetest.register_node("calandria:terminal", {
                                       error = calandria.term.on_error
                           },
                           groups = {dig_immediate = 2},
-                          on_construct = calandria.term.on_construct,
-                          on_rightclick = calandria.term.on_rightclick,
+                          on_construct = calandria.on_construct,
+                          on_receive_fields = calandria.on_receive_fields,
 })
-
-minetest.register_on_player_receive_fields(calandria.term.on_input)

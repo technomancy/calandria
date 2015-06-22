@@ -62,7 +62,7 @@ calandria.server = {
       print("Loading...")
       local file = io.open(calandria.server.path, "r")
       local contents = file and file:read("*all")
-      file:close()
+      if file then file:close() end
       if(file and contents ~= "") then
          calandria.server.placed = minetest.deserialize(contents)
          for pos_str,server in pairs(calandria.server.placed) do
