@@ -50,10 +50,10 @@ calandria.term = {
 
    login = function(pos, player, args)
       local dest, user, password = unpack(args)
-      dest = "(-13,1,-12)"
-      user = "singleplayer"
+
       diginet.send({ source = pos, destination = dest, method = "login",
-                     player = player, user = user, password = password })
+                     player = player:get_player_name(), user = user,
+                     password = password })
    end,
 
    -- internals

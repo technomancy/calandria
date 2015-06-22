@@ -18,9 +18,12 @@ on installing mods. You'll also need to install the
 
 In order to start using the OS, you'll need to place a server block,
 then place a terminal near it. Right-click on the terminal and log in
-to the server using `/login (10,1,5) username` where the second
-argument is the position of the server you've placed. At that point
-you can enter shell commands.
+to the server using `/login (10,1,5) singleplayer` where the first
+argument is the position of the server you've placed and the second
+argument is your current player name. (Note that servers can have
+users with any name, but when you place a server, the only user that
+exists at first is one named after your player.) At that point you can
+enter shell commands.
 
 No crafting recipes have been added yet, so you must use creative.
 

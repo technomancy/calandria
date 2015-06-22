@@ -132,14 +132,18 @@ calandria.server = {
    on_login = function(pos, packet)
       local server = calandria.server.find(pos)
       if(server) then
-         local env = new_session_env(pos, server, packet.player, packet.user,
-                                     minetest.pos_to_string(packet.source))
-         local fs = orb.fs.proxy(server.fs_raw, packet.player, server.fs_raw)
+         if(orb.shell.login(server.fs_raw, packet.user, packet.password)) then
+            local env = new_session_env(pos, server, packet.player, packet.user,
+                                        minetest.pos_to_string(packet.source))
+            local fs = orb.fs.proxy(server.fs_raw, packet.player, server.fs_raw)
 
-         orb.process.spawn(fs, env, "smash")
+            orb.process.spawn(fs, env, "smash")
 
-         -- ignoring passwords for now woooooo
-         diginet.reply(packet, { method = "logged_in" })
+            -- ignoring passwords for now woooooo
+            diginet.reply(packet, { method = "logged_in" })
+         else
+            diginet.reply(packet, { method = "tty", body = "Login failed." })
+         end
       else
          print("No server at " .. minetest.pos_to_string(pos))
       end
