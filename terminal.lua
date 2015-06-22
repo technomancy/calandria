@@ -114,15 +114,7 @@ calandria.term = {
       calandria.term.new_line(pos, "/help for help")  -- print welcome text
    end,
 
-   on_rightclick = function(pos, node, player, itemstack, pointed_thing)
-      minetest.show_formspec(player:get_player_name(), "calandria.term",
-                             meta:get_string("formspec"))
-   end,
-
-   on_input = function(player, formname, fields)
-      if(formname ~= "calandria.term") then return end
-      if(fields.quit) then return true end
-
+   on_receive_fields = function(pos, formname, fields, player)
       local meta = minetest.env:get_meta(pos)
       local text = fields.input
       local player_name = player:get_player_name()
@@ -138,13 +130,6 @@ calandria.term = {
          else
             calandria.term.new_line(pos, "Not logged in, try /login SERVER USER PASSWORD")
          end
-
-         minetest.after(0.1, function()
-                           minetest.show_formspec(player_name,
-                                                  formname,
-                                                  meta:get_string("formspec"))
-         end)
-         return true
       end
    end,
 
@@ -196,6 +181,6 @@ minetest.register_node("calandria:terminal", {
                                       error = calandria.term.on_error
                           },
                           groups = {dig_immediate = 2},
-                          on_construct = calandria.on_construct,
-                          on_receive_fields = calandria.on_receive_fields,
+                          on_construct = calandria.term.on_construct,
+                          on_receive_fields = calandria.term.on_receive_fields,
 })
