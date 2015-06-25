@@ -1,0 +1,12 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+
+if(#args == 5) then
+   local pos_str = args[1]
+   local code = ("port.a = " .. args[2] .. " port.b = " .. args[3] ..
+                    " port.c = " .. args[4] .. " port.d = " .. args[5])
+   flash(pos_str, code)
+else
+   print("Usage: setports POS PORTA PORTB PORTC PORTD")
+end

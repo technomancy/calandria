@@ -1,0 +1,10 @@
+-- -*- lua -*-
+
+local f, env, args = ...
+
+if(#args == 2) then
+   flash(args[1], f[args[2]])
+else
+   io.write("Flash a new program from the current server to a luacontroller.")
+   io.write("Usage: flash FILE LUACONTROLLER_POS\n")
+end

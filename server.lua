@@ -32,12 +32,42 @@ local new_session_env = function(pos, server, player, user, address)
    return env
 end
 
+-- reprogram luacontrollers remotely
+local flash = function(pos_str, code)
+   assert(type(code) == "string",
+          "Tried to program luacontroller with" .. type(code))
+   local pos = minetest.string_to_pos(pos_str)
+   local node = minetest.registered_nodes[minetest.get_node(pos).name]
+   print("Looking up node: " .. minetest.get_node(pos).name)
+   return node.on_receive_fields(pos, "orb", {program = true, code = code})
+end
+
+local sandbox = { flash = flash, diginet = diginet,
+                  digiline = function(pos, channel, msg)
+                     digiline:receptor_send(pos, digiline.rules.default,
+                                            channel, msg)
+                  end,
+                  minetest = { string_to_pos = string_to_pos,
+                               pos_to_string = pos_to_string, }
+}
+
 calandria.server = {
+   seed = function(fs)
+      for real_path, fs_path in pairs({flash = "/bin/flash",
+                                       digiline = "/bin/digiline",
+                                       setports = "/bin/setports",
+      }) do
+         orb.fs.copy_to_fs(fs, fs_path, real_path,
+                           minetest.get_modpath("calandria") .. "/resources/")
+      end
+   end,
+
    make = function(player, pos)
       -- TODO: set infotext
       local fs_raw = orb.fs.new_raw()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
       orb.fs.seed(fs, {player})
+      calandria.server.seed(fs)
       local proc = orb.fs.mkdir(fs, "/proc/root")
       proc._group = "root"
 
@@ -71,8 +101,6 @@ calandria.server = {
                local dir, base = orb.fs.dirname(session_name)
                local tty_address = orb.utils.split(base, ":")[3]
                create_io_fifos(env, fs, pos_str, tty_address)
-               -- can't restore all processes; at least we get a shell back
-               orb.process.spawn(fs, env, "smash")
             end
          end
       else
@@ -137,9 +165,8 @@ calandria.server = {
                                         minetest.pos_to_string(packet.source))
             local fs = orb.fs.proxy(server.fs_raw, packet.player, server.fs_raw)
 
-            orb.process.spawn(fs, env, "smash")
+            orb.process.spawn(fs, env, "smash", sandbox)
 
-            -- ignoring passwords for now woooooo
             diginet.reply(packet, { method = "logged_in" })
          else
             diginet.reply(packet, { method = "tty", body = "Login failed." })

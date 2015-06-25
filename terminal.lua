@@ -114,7 +114,7 @@ calandria.term = {
       calandria.term.new_line(pos, "/help for help")  -- print welcome text
    end,
 
-   on_receive_fields = function(pos, formname, fields, player)
+   on_receive_fields = function(pos, _formname, fields, player)
       local meta = minetest.env:get_meta(pos)
       local text = fields.input
       local player_name = player:get_player_name()
