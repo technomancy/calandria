@@ -47,14 +47,15 @@ local sandbox = { flash = flash, diginet = diginet,
                      digiline:receptor_send(pos, digiline.rules.default,
                                             channel, msg)
                   end,
-                  minetest = { string_to_pos = string_to_pos,
-                               pos_to_string = pos_to_string, }
+                  minetest = { string_to_pos = minetest.string_to_pos,
+                               pos_to_string = minetest.pos_to_string, }
 }
 
 calandria.server = {
    seed = function(fs)
       for real_path, fs_path in pairs({flash = "/bin/flash",
                                        digiline = "/bin/digiline",
+                                       diginet = "/bin/diginet",
                                        setports = "/bin/setports",
       }) do
          orb.fs.copy_to_fs(fs, fs_path, real_path,
