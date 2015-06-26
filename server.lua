@@ -174,6 +174,30 @@ calandria.server = {
          print("No server at " .. minetest.pos_to_string(pos))
       end
    end,
+
+   -- TODO: login?
+   on_save_file = function(pos, packet)
+      local server = calandria.server.find(pos)
+      local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
+      local dirname, base = orb.fs.dirname(packet.path)
+      local dir = fs[dirname]
+      -- TODO: report failed saves
+      dir[base] = packet.body
+   end,
+
+   on_get_file = function(pos, packet)
+      local server = calandria.server.find(pos)
+      local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
+      local file = fs[packet.path]
+      if(type(file) == "string") then
+         diginet.reply(packet, { body = file, path = packet.path,
+                                 method = "file", })
+      elseif(type(file) == "function") then
+         diginet.reply(packet, { body = file(), method = "file" })
+      else
+         print("Tried to get non-file: " .. type(file))
+      end
+   end,
 }
 
 calandria.server.placed = calandria.server.placed or {}
@@ -200,6 +224,8 @@ minetest.register_node("calandria:server", {
                           groups = {dig_immediate = 2},
                           diginet = { tty = calandria.server.on_tty,
                                       login = calandria.server.on_login,
+                                      save_file = calandria.server.on_save_file,
+                                      get_file = calandria.server.on_get_file,
                           },
                           after_place_node = calandria.server.after_place,
                           on_destruct = calandria.server.on_destruct,

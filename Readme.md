@@ -1,9 +1,11 @@
 # Calandria
 
 This is a mod for games that run on the
-[Minetest engine](http://www.minetest.net) designed to encourage
-exploration of programming and other technical skills by adding
-programmable unixlike servers.
+[Minetest engine](http://www.minetest.net) such as
+[Carbone](https://github.com/calinou/carbone/) and
+[Moontest](https://github.com/Amaz1/moontest).
+It is designed to encourage exploration of programming and other
+technical skills by adding programmable unixlike servers.
 
 ## Playing
 
@@ -25,7 +27,17 @@ users with any name, but when you place a server, the only user that
 exists at first is one named after your player.) At that point you can
 enter shell commands.
 
+You can create simple files with `echo hello > greeting`, but for
+larger files you are going to want to use a text editor node. Place it
+and set the `server` field to the server on whose filesystem you want
+to edit a file. Enter a path, and hit `load` to edit an existing file,
+or just start typing and hit `save` to create a new one.
+
 No crafting recipes have been added yet, so you must use creative.
+
+Please note that it's easy to make
+[programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6),
+so this mod is not suitable for public servers yet.
 
 ## Philosophy
 
