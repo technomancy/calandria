@@ -87,10 +87,10 @@ calandria.server = {
       return server
    end,
 
-   path = minetest.get_worldpath() .. "/servers",
+   path = minetest.get_worldpath() .. "/calandria_servers",
 
    load = function()
-      print("Loading...")
+      print("Loading calandria servers...")
       local file = io.open(calandria.server.path, "r")
       local contents = file and file:read("*all")
       if file then file:close() end
@@ -104,8 +104,6 @@ calandria.server = {
                create_io_fifos(env, fs, pos_str, tty_address)
             end
          end
-      else
-         return {}
       end
    end,
 
