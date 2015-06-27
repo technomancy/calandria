@@ -6,7 +6,7 @@ local diginet_dir = function(user, address)
    return "/home/" .. user .. "/diginet/" .. address
 end
 
-local session_name = function(player, term)
+local get_session_name = function(player, term)
    return "session:" .. player .. ":" .. term
 end
 
@@ -28,7 +28,7 @@ local new_session_env = function(pos, server, player, user, address)
 
    create_io_fifos(env, fs, pos, address)
 
-   server.sessions[session_name(player, address)] = env
+   server.sessions[get_session_name(player, address)] = env
    return env
 end
 
@@ -63,7 +63,7 @@ calandria.server = {
       end
    end,
 
-   make = function(player, pos)
+   make = function(player, _)
       -- TODO: set infotext
       local fs_raw = orb.fs.new_raw()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
@@ -99,7 +99,7 @@ calandria.server = {
          for pos_str,server in pairs(calandria.server.placed) do
             for session_name, env in pairs(server.sessions) do
                local fs = orb.fs.proxy(server.fs_raw, env.USER, server.fs_raw)
-               local dir, base = orb.fs.dirname(session_name)
+               local _, base = orb.fs.dirname(session_name)
                local tty_address = orb.utils.split(base, ":")[3]
                create_io_fifos(env, fs, pos_str, tty_address)
             end
@@ -108,7 +108,7 @@ calandria.server = {
    end,
 
    save = function()
-      for pos,server in pairs(calandria.server.placed) do
+      for _,server in pairs(calandria.server.placed) do
          orb.fs.strip_special(server.fs_raw)
       end
       local file = io.open(calandria.server.path, "w")
@@ -116,7 +116,7 @@ calandria.server = {
       file:close()
    end,
 
-   scheduler = function(pos, node, _active_object_count, _wider)
+   scheduler = function(pos, _, _, _)
       local server = calandria.server.placed[minetest.pos_to_string(pos)]
       if server and server.fs_raw and server.fs_raw.proc then
          orb.process.scheduler(server.fs_raw)
@@ -124,7 +124,7 @@ calandria.server = {
    end,
 
    -- callbacks
-   after_place = function(pos, placer, _itemstack, _pointed)
+   after_place = function(pos, placer, _, _)
       local server = calandria.server.make(placer:get_player_name(), pos)
       calandria.server.placed[minetest.pos_to_string(pos)] = server
       return server
@@ -138,8 +138,8 @@ calandria.server = {
    on_tty = function(pos, packet)
       local server = calandria.server.find(pos)
       if(server) then
-         local session_name = session_name(packet.player,
-                                           minetest.pos_to_string(packet.source))
+         local session_name = get_session_name(packet.player,
+                                               minetest.pos_to_string(packet.source))
          local session = server.sessions[session_name]
          if(session) then
             -- TODO: cache proxies

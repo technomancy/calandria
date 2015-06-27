@@ -12,16 +12,16 @@
 
 local terminal_size = {10, 8}
 
-local split = function(str,div)
-   if(div=='') then return {str} end
-   if(div==str) then return {} end
+local split = function(orig,div)
+   if(div=='') then return {orig} end
+   if(div==orig) then return {} end
    local pos,res = 0,{}
-   for st,sp in function() return str:find(div,pos) end do
+   for st,sp in function() return orig:find(div,pos) end do
       local str = string.sub(str,pos,st-1)
       if(str ~= "") then table.insert(res,str) end
       pos = sp + 1
    end
-   table.insert(res,string.sub(str,pos))
+   table.insert(res,string.sub(orig,pos))
    return res
 end
 
@@ -114,7 +114,7 @@ calandria.term = {
       calandria.term.new_line(pos, "/help for help")  -- print welcome text
    end,
 
-   on_receive_fields = function(pos, _formname, fields, player)
+   on_receive_fields = function(pos, _, fields, player)
       local meta = minetest.get_meta(pos)
       local text = fields.input
       local player_name = player:get_player_name()
@@ -169,12 +169,12 @@ minetest.register_node("calandria:terminal", {
                              }
                           },
                           tiles = {
-                             "terminal_top.png",
-                             "digicode_side.png",
-                             "digicode_side.png",
-                             "digicode_side.png",
-                             "digicode_side.png",
-                             "terminal_front.png"
+                             "cal_server_side.png",
+                             "cal_server_side.png",
+                             "cal_server_side.png",
+                             "cal_server_side.png",
+                             "cal_server_side.png",
+                             "calandria_terminal_front.png"
                           },
                           diginet = { tty = calandria.term.on_tty,
                                       logged_in = calandria.term.on_logged_in,
