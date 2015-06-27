@@ -189,23 +189,37 @@ calandria.server = {
    on_save_file = function(pos, packet)
       local server = calandria.server.find(pos)
       local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
-      local dirname, base = orb.fs.dirname(packet.path)
-      local dir = fs[dirname]
-      -- TODO: report failed saves
-      dir[base] = packet.body
+      success, err = pcall(function()
+            local dirname, base = orb.fs.dirname(packet.path)
+            local dir = fs[dirname]
+            dir[base] = packet.body
+      end)
+      if(success) then
+         diginet.reply(packet, {method = "modeline",
+                                modeline = "Saved "..packet.path})
+      else
+         diginet.reply(packet, {method = "modeline", modeline = err})
+      end
    end,
 
    on_get_file = function(pos, packet)
       local server = calandria.server.find(pos)
       local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
-      local file = fs[packet.path]
-      if(type(file) == "string") then
-         diginet.reply(packet, { body = file, path = packet.path,
-                                 method = "file", })
-      elseif(type(file) == "function") then
-         diginet.reply(packet, { body = file(), method = "file" })
-      else
-         print("Tried to get non-file: " .. type(file))
+      success, err = pcall(function()
+            local file = fs[packet.path]
+            if(type(file) == "string") then
+               diginet.reply(packet, { body = file, path = packet.path,
+                                       method = "file", })
+            elseif(type(file) == "function") then
+               diginet.reply(packet, { body = file(), method = "file" })
+            elseif(not file) then
+               error("Not found: " .. packet.path)
+            else
+               error("Tried to get non-file: " .. type(file))
+            end
+      end)
+      if(not success) then
+         diginet.reply(packet, {method = "modeline", modeline = err})
       end
    end,
 }
