@@ -30,7 +30,10 @@ calandria = calandria or {}
 calandria.term = {
    formspec =
       "size[" .. terminal_size[1] .. "," .. terminal_size[2] .. "]" ..
-      "field[0,"..terminal_size[2].. ";" .. terminal_size[1] .. ",1;input;;]",
+      "field[0.5,".. (terminal_size[2] - 0.5) .. ";" .. (terminal_size[1] - 0.5) ..
+      ",0.5;input;;]" ..
+      "button[" .. terminal_size[1] - 1 .. "," .. (terminal_size[2] - 0.5).. ";" ..
+      "1,0.5;enter;enter]",
 
    -- commands
 
