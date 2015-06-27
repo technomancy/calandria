@@ -35,9 +35,22 @@ or just start typing and hit `save` to create a new one.
 
 No crafting recipes have been added yet, so you must use creative.
 
+## Gotchas
+
+Interacting with the terminal is
+[not as nice as it should be](https://github.com/technomancy/calandria/issues/4). In
+particular,
+[pressing enter closes the terminal](https://github.com/technomancy/calandria/issues/21),
+and when output comes in from a server, the input field is cleared.
+
+Currently logins to server nodes
+[do not require a password](https://github.com/technomancy/orb/issues/7).
+
 Please note that it's easy to make
 [programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6),
-so this mod is not suitable for public servers yet.
+so this mod is not suitable for public servers yet. Also note that all
+chat commands run on a server node are run as the player who placed
+that node, which is a definite security concern in some contexts.
 
 ## Philosophy
 

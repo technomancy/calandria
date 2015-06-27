@@ -42,14 +42,24 @@ local flash = function(pos_str, code)
    return node.on_receive_fields(pos, "orb", {program = true, code = code})
 end
 
-local sandbox = { flash = flash, diginet = diginet,
-                  digiline = function(pos, channel, msg)
-                     digiline:receptor_send(pos, digiline.rules.default,
-                                            channel, msg)
-                  end,
-                  minetest = { string_to_pos = minetest.string_to_pos,
-                               pos_to_string = minetest.pos_to_string, }
-}
+local chat_command = function(player, command_name, args)
+   local cmddef = minetest.chatcommands[command_name]
+   local ok, missing_privs = minetest.check_player_privs(player, cmddef.privs)
+   cmddef.func(owner, args)
+end
+
+local sandbox = function(player)
+   return { flash = flash, diginet = diginet,
+     digiline = function(pos, channel, msg)
+        digiline:receptor_send(pos, digiline.rules.default,
+                               channel, msg)
+     end,
+     minetest = { string_to_pos = minetest.string_to_pos,
+                  pos_to_string = minetest.pos_to_string,
+                  chat_command = orb.utils.partial(chat_command, player)
+     },
+   }
+end
 
 calandria.server = {
    seed = function(fs)
@@ -162,9 +172,9 @@ calandria.server = {
          if(orb.shell.login(server.fs_raw, packet.user, packet.password)) then
             local env = new_session_env(pos, server, packet.player, packet.user,
                                         minetest.pos_to_string(packet.source))
-            local fs = orb.fs.proxy(server.fs_raw, packet.player, server.fs_raw)
+            local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
 
-            orb.process.spawn(fs, env, "smash", sandbox)
+            orb.process.spawn(fs, env, "smash", sandbox(packet.player))
 
             diginet.reply(packet, { method = "logged_in" })
          else
