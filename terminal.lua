@@ -17,7 +17,7 @@ local split = function(orig,div)
    if(div==orig) then return {} end
    local pos,res = 0,{}
    for st,sp in function() return orig:find(div,pos) end do
-      local str = string.sub(str,pos,st-1)
+      local str = string.sub(orig,pos,st-1)
       if(str ~= "") then table.insert(res,str) end
       pos = sp + 1
    end
