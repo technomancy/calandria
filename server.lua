@@ -142,10 +142,9 @@ calandria.server = {
       return server
    end,
 
-   -- TODO: this crashes
-   -- on_destruct = function(pos)
-   --    table.remove(calandria.server.placed, minetest.pos_to_string(pos))
-   -- end,
+   on_destruct = function(pos)
+      calandria.server.placed[minetest.pos_to_string(pos)] = nil
+   end,
 
    on_tty = function(pos, packet)
       local server = calandria.server.find(pos)
