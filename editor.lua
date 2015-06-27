@@ -27,12 +27,12 @@ end
 -- callbacks
 
 local on_construct = function(pos)
-   local meta = minetest.env:get_meta(pos)
+   local meta = minetest.get_meta(pos)
    meta:set_string("formspec", formspec)
 end
 
 local on_receive_fields = function(pos, _formname, fields, player)
-   local meta = minetest.env:get_meta(pos)
+   local meta = minetest.get_meta(pos)
    meta:set_string("server", fields.server)
    meta:set_string("path", fields.path)
    meta:set_string("body", fields.body)
@@ -45,7 +45,7 @@ local on_receive_fields = function(pos, _formname, fields, player)
 end
 
 local on_file = function(pos, packet)
-   local meta = minetest.env:get_meta(pos)
+   local meta = minetest.get_meta(pos)
    meta:set_string("server", packet.source)
    meta:set_string("path", packet.path)
    meta:set_string("body", packet.body)

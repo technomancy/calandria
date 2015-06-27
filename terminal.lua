@@ -43,7 +43,7 @@ calandria.term = {
    end,
 
    clear = function(pos)
-      local meta = minetest.env:get_meta(pos)
+      local meta = minetest.get_meta(pos)
       meta:set_string("formspec", calandria.term.formspec) -- reset to default
       meta:set_int("lines", 0)  -- start at the top of the screen again
    end,
@@ -75,7 +75,7 @@ calandria.term = {
    new_line = function(pos, text)
       local max_chars = terminal_size[1] * 8
       local max_lines = (terminal_size[2] * 4) - 1
-      local meta = minetest.env:get_meta(pos)
+      local meta = minetest.get_meta(pos)
       local lines = meta:get_int("lines")
 
       -- clear screen before printing the line - so it's never blank
@@ -106,7 +106,7 @@ calandria.term = {
    -- callbacks
 
    on_construct = function(pos)
-      local meta = minetest.env:get_meta(pos)
+      local meta = minetest.get_meta(pos)
       meta:set_string("formspec", calandria.term.formspec)
       meta:set_string("Infotext", "Terminal")
       meta:set_int("lines", 0)
@@ -115,7 +115,7 @@ calandria.term = {
    end,
 
    on_receive_fields = function(pos, _formname, fields, player)
-      local meta = minetest.env:get_meta(pos)
+      local meta = minetest.get_meta(pos)
       local text = fields.input
       local player_name = player:get_player_name()
 
@@ -142,7 +142,7 @@ calandria.term = {
    end,
 
    on_logged_in = function(pos, packet)
-      local meta = minetest.env:get_meta(pos)
+      local meta = minetest.get_meta(pos)
       meta:set_string("session_" .. packet.player,
                       minetest.pos_to_string(packet.source))
       calandria.term.new_line(pos, "Logged in.")
