@@ -153,27 +153,12 @@ minetest.register_node("calandria:terminal", {
                           paramtype = "light",
                           paramtype2 = "facedir",
                           walkable = true,
-                          drawtype = "nodebox",
-                          selection_box = {
-                             type = "fixed",
-                             fixed = {
-                                {-0.5, -0.5, -0.5, 0.5, -0.3, 0}, -- Keyboard
-                                {-0.5, -0.5, 0, 0.5, 0.5, 0.5}, --Screen
-                             }
-                          },
-                          node_box = {
-                             type = "fixed",
-                             fixed = {
-                                {-0.5, -0.5, -0.5, 0.5, -0.3, 0}, -- Keyboard
-                                {-0.5, -0.5, 0, 0.5, 0.5, 0.5}, --Screen
-                             }
-                          },
                           tiles = {
-                             "cal_server_side.png",
-                             "cal_server_side.png",
-                             "cal_server_side.png",
-                             "cal_server_side.png",
-                             "cal_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
                              "calandria_terminal_front.png"
                           },
                           diginet = { tty = calandria.term.on_tty,

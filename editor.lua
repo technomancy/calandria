@@ -59,12 +59,12 @@ minetest.register_node("calandria:editor", {
                           paramtype2 = "facedir",
                           walkable = true,
                           tiles = {
-                             "terminal_top.png",
-                             "digicode_side.png",
-                             "digicode_side.png",
-                             "digicode_side.png",
-                             "digicode_side.png",
-                             "terminal_front.png"
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_server_side.png",
+                             "calandria_editor_front.png"
                           },
                           diginet = { file = on_file,},
                           groups = {dig_immediate = 2},
