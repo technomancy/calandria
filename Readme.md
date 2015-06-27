@@ -42,8 +42,9 @@ Interacting with the terminal is
 particular, when output comes in from a server, the input field is
 cleared, and
 [pressing enter closes the terminal](https://github.com/technomancy/calandria/issues/21). You
-can work around the latter by using the mouse to enter the input, but
-it is tedious.
+can work around the latter by pressing `tab` to focus the "enter" form
+button, hitting enter, and hitting `shift-tab` to focus back on the
+input field.
 
 This mod is not suitable for public servers due to security concerns.
 Currently logins to server nodes

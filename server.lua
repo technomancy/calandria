@@ -76,7 +76,6 @@ calandria.server = {
    end,
 
    make = function(player, _)
-      -- TODO: set infotext
       local fs_raw = orb.fs.new_raw()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
       orb.fs.seed(fs, {player})
@@ -114,6 +113,8 @@ calandria.server = {
                local _, base = orb.fs.dirname(session_name)
                local tty_address = orb.utils.split(base, ":")[3]
                create_io_fifos(env, fs, pos_str, tty_address)
+               -- can't restore all processes; at least we get a shell back
+               orb.process.spawn(fs, env, "smash")
             end
          end
       end
@@ -153,7 +154,7 @@ calandria.server = {
                                                minetest.pos_to_string(packet.source))
          local session = server.sessions[session_name]
          if(session) then
-            -- TODO: cache proxies
+            -- TODO: cache proxies?
             local fs = orb.fs.proxy(server.fs_raw, "root", server.fs_raw)
             local in_function = fs[session.IN]
             assert(in_function, "Missing session input file.")
@@ -223,25 +224,16 @@ calandria.server = {
          diginet.reply(packet, {method = "modeline", modeline = err})
       end
    end,
+
+   placed = {},
 }
 
-calandria.server.placed = calandria.server.placed or {}
-
--- TODO: check to see if these have been loaded already:
--- if(not minetest.registered_items["mod:item"]) then ...
 minetest.register_on_shutdown(calandria.server.save)
 
 minetest.register_node("calandria:server", {
-                          description = "server",
-                          drawtype = "nodebox",
+                          description = "Server",
                           paramtype = "light",
                           paramtype2 = 'facedir',
-                          node_box = {
-                             type = "fixed",
-                             fixed = {
-                                {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
-                             },
-                          },
                           tiles =
                              {'calandria_server_side.png',
                               'calandria_server_side.png',

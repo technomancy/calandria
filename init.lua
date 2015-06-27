@@ -1,4 +1,4 @@
-calandria = calandria or {}
+calandria = {}
 
 dofile(minetest.get_modpath("calandria").."/server.lua")
 dofile(minetest.get_modpath("calandria").."/terminal.lua")
