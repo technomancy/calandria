@@ -33,24 +33,25 @@ and set the `server` field to the server on whose filesystem you want
 to edit a file. Enter a path, and hit `load` to edit an existing file,
 or just start typing and hit `save` to create a new one.
 
-No crafting recipes have been added yet, so you must use creative.
+No crafting recipes have been added yet, so you must use creative mode.
 
 ## Gotchas
 
 Interacting with the terminal is
 [not as nice as it should be](https://github.com/technomancy/calandria/issues/4). In
-particular,
-[pressing enter closes the terminal](https://github.com/technomancy/calandria/issues/21),
-and when output comes in from a server, the input field is cleared.
+particular, when output comes in from a server, the input field is
+cleared, and
+[pressing enter closes the terminal](https://github.com/technomancy/calandria/issues/21). You
+can work around the latter by using the mouse to enter the input, but
+it is tedious.
 
+This mod is not suitable for public servers due to security concerns.
 Currently logins to server nodes
 [do not require a password](https://github.com/technomancy/orb/issues/7).
-
-Please note that it's easy to make
-[programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6),
-so this mod is not suitable for public servers yet. Also note that all
-chat commands run on a server node are run as the player who placed
-that node, which is a definite security concern in some contexts.
+Also note that all chat commands run on a server node are run as the
+player who placed that node, which is a definite security concern in
+some contexts. Please note that it's easy to make
+[programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6).
 
 ## Philosophy
 

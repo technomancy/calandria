@@ -38,11 +38,11 @@ calandria.term = {
    -- commands
 
    help = function(pos)  -- print help text
-      calandria.term.new_line(pos, "Commands preceded with a / go to the terminal.")
+      calandria.term.new_line(pos, "Commands starting with an = go to the terminal.")
       calandria.term.new_line(pos, "All others are sent over diginet.")
       calandria.term.new_line(pos, "You'll need to login to a server")
       calandria.term.new_line(pos, "before you can send any commands.")
-      calandria.term.new_line(pos, "Commands are:   /clear /help /login")
+      calandria.term.new_line(pos, "Commands are:   =clear =help =login")
    end,
 
    clear = function(pos)
@@ -114,7 +114,7 @@ calandria.term = {
       meta:set_string("Infotext", "Terminal")
       meta:set_int("lines", 0)
 
-      calandria.term.new_line(pos, "/help for help")  -- print welcome text
+      calandria.term.new_line(pos, "type =help for help")  -- print welcome text
    end,
 
    on_receive_fields = function(pos, _, fields, player)
@@ -125,13 +125,13 @@ calandria.term = {
       if(text) then
          calandria.term.new_line(pos, "> " .. text)
          local session_dest = meta:get_string("session_" .. player_name)
-         if text:sub(1,1) == "/" then  -- command is for terminal
+         if text:sub(1,1) == "=" then  -- command is for terminal
             calandria.term.parse_cmd(pos, player, text:sub(2))
          elseif(session_dest ~= "") then
             diginet.send({ source = pos, destination = session_dest,
                            player = player_name, method = "tty", body = text })
          else
-            calandria.term.new_line(pos, "Not logged in, try /login SERVER USER PASSWORD")
+            calandria.term.new_line(pos, "Not logged in, try =login SERVER USER PASSWORD")
          end
       end
    end,
