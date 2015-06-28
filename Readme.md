@@ -18,7 +18,9 @@ on installing mods. You'll also need to install the
 [orb](https://github.com/technomancy/orb) and
 [diginet](https://github.com/technomancy/diginet) mods.
 
-In order to start using the OS, you'll need to place a server block,
+![terminal](http://p.hagelb.org/calandria_terminal.png)
+
+In order to start, you'll need to place a server block,
 then place a terminal near it. Right-click on the terminal and log in
 to the server using `/login (10,1,5) singleplayer` where the first
 argument is the position of the server you've placed and the second
@@ -27,11 +29,15 @@ users with any name, but when you place a server, the only user that
 exists at first is one named after your player.) At that point you can
 enter shell commands.
 
+![editor](http://p.hagelb.org/calandria_editor.png)
+
 You can create simple files with `echo hello > greeting`, but for
 larger files you are going to want to use a text editor node. Place it
 and set the `server` field to the server on whose filesystem you want
 to edit a file. Enter a path, and hit `load` to edit an existing file,
 or just start typing and hit `save` to create a new one.
+
+![dns](http://p.hagelb.org/calandria_dns.png)
 
 No crafting recipes have been added yet, so you must use creative mode.
 
