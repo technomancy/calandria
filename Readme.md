@@ -7,16 +7,21 @@ This is a mod for games that run on the
 It is designed to encourage exploration of programming and other
 technical skills by adding programmable unixlike servers.
 
-## Playing
+## Installing
 
-Download a copy of the mod (either through `git clone` or
-[as an archive](https://github.com/technomancy/calandria/archive/master.zip))
+Download
+[the modpack](https://github.com/technomancy/calandria/releases/download/0.1.0-RC1/calandria-mp-0.1.0-RC1.tar.gz)
 and place it in the `mods/` subdirectory of your Minetest
 installation. See
 [the wiki](http://wiki.minetest.com/wiki/Installing_Mods) for details
-on installing mods. You'll also need to install the
+on installing mods.
+
+In order to run the latest version from source, clone this repository
+into your `mods/` subdirectory and grab
 [orb](https://github.com/technomancy/orb) and
-[diginet](https://github.com/technomancy/diginet) mods.
+[diginet](https://github.com/technomancy/diginet) mods as well.
+
+## Playing
 
 ![terminal](http://p.hagelb.org/calandria_terminal.png)
 
@@ -29,6 +34,10 @@ users with any name, but when you place a server, the only user that
 exists at first is one named after your player.) At that point you can
 enter shell commands.
 
+You can get reasonably far by just treating it like a unix with lots
+of missing parts, but for a more thorough explanation see the
+[orb readme](https://github.com/technomancy/orb).
+
 ![editor](http://p.hagelb.org/calandria_editor.png)
 
 You can create simple files with `echo hello > greeting`, but for
@@ -39,26 +48,44 @@ or just start typing and hit `save` to create a new one.
 
 ![dns](http://p.hagelb.org/calandria_dns.png)
 
+Remembering the positions of your servers can be a bit of a drag. The
+DNS server node from diginet allows you to add aliases for any given
+position so you can just type an easy-to-remember name instead of a
+bunch of numbers for the position.
+
 No crafting recipes have been added yet, so you must use creative mode.
 
-## Gotchas
+## Communication
 
-Interacting with the terminal is
-[not as nice as it should be](https://github.com/technomancy/calandria/issues/4). In
-particular, when output comes in from a server, the input field is
-cleared, and
-[pressing enter closes the terminal](https://github.com/technomancy/calandria/issues/21). You
-can work around the latter by pressing `tab` to focus the "enter" form
-button, hitting enter, and hitting `shift-tab` to focus back on the
-input field.
+Calandria servers include a few scripts to work with some 3rd-party mods.
 
-This mod is not suitable for public servers due to security concerns.
-Currently logins to server nodes
-[do not require a password](https://github.com/technomancy/orb/issues/7).
-Also note that all chat commands run on a server node are run as the
-player who placed that node, which is a definite security concern in
-some contexts. Please note that it's easy to make
-[programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6).
+    > flash /path/to/file (5,2,-17)
+
+This allows you to remotely reprogram a
+[Luacontroller](http://mesecons.net/luacontroller), from the
+[Mesecons](http://mesecons.net/) mod. You can also use the `setports`
+script to turn on and off its outputs:
+
+    > setports (5,2,-17) true true false true
+
+The Luacontroller at 5,2,-17 will have its A, B, and D ports turned on
+and its C port turned off.
+
+You can also send messages over the
+[Digilines](https://github.com/Jeija/minetest-mod-digilines) protocol:
+
+    > digiline (56,12,8) mychannel message
+
+Although digiline messages can be of any Lua type, the script only
+supports string messages. To send non-strings, you can write your own
+scripts that call the `digiline` function.
+
+Terminals, servers, and editors communicate with each other using the
+[diginet](https://github.com/technomancy/diginet) protocol, which has
+some similarities to digilines, but is wireless and sends messages
+without any propagation delay. You can create your own nodes which
+accept diginet messages, and you can send diginet messages from
+servers, either from your own programs or on the command line.
 
 ## Philosophy
 
@@ -133,10 +160,29 @@ It seems like implementing a terminal is going to be the biggest
 technical challenge for this mod since no one has so far accomplished
 this satisfactorily.
 
+## Gotchas
+
+Interacting with the terminal is
+[not as nice as it should be](https://github.com/technomancy/calandria/issues/4). In
+particular, when output comes in from a server, the input field is
+cleared, and
+[pressing enter closes the terminal](https://github.com/technomancy/calandria/issues/21). You
+can work around the latter by pressing `tab` to focus the "enter" form
+button, hitting enter, and hitting `shift-tab` to focus back on the
+input field.
+
+This mod is not suitable for public servers due to security concerns.
+Currently logins to server nodes
+[do not require a password](https://github.com/technomancy/orb/issues/7).
+Also note that all chat commands run on a server node are run as the
+player who placed that node, which is a definite security concern in
+some contexts. Please note that it's easy to make
+[programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6).
+
 ## License
 
-Textures: [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)
-Sky textures from [Moontest](https://github.com/Amaz1/moontest).
+Copyright © 2015 Phil Hagelberg and contributors
 
-Calandria-specific code (calandria/orb mods): GPLv3 or later; see COPYING.
-Other bundled mods distributed under their own licenses as documented.
+Textures: [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)
+Code: GPLv3 or later; see COPYING.
+
