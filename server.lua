@@ -36,9 +36,8 @@ end
 local flash = function(pos_str, code)
    assert(type(code) == "string",
           "Tried to program luacontroller with" .. type(code))
-   local pos = minetest.string_to_pos(pos_str)
+   local pos = minetest.string_to_pos(diginet.aliases[pos_str] or pos_str)
    local node = minetest.registered_nodes[minetest.get_node(pos).name]
-   print("Looking up node: " .. minetest.get_node(pos).name)
    return node.on_receive_fields(pos, "orb", {program = true, code = code})
 end
 
