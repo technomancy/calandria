@@ -67,9 +67,9 @@ end
 
 local on_file = function(pos, packet)
    local meta = minetest.get_meta(pos)
-   meta:set_string("server", fields.server)
-   meta:set_string("path", fields.path)
-   meta:set_string("body", fields.body)
+   meta:set_string("server", packet.server)
+   meta:set_string("path", packet.path)
+   meta:set_string("body", packet.body)
    meta:set_string("formspec", formspec(minetest.pos_to_string(packet.source),
                                         packet.path, packet.body))
    print("Received file: " .. packet.path)

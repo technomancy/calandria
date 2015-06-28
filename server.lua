@@ -140,6 +140,8 @@ calandria.server = {
    after_place = function(pos, placer, _, _)
       local server = calandria.server.make(placer:get_player_name(), pos)
       calandria.server.placed[minetest.pos_to_string(pos)] = server
+      local meta = minetest.get_meta(pos)
+      meta:set_string("infotext", minetest.pos_to_string(pos))
       return server
    end,
 
@@ -207,7 +209,7 @@ calandria.server = {
    on_get_file = function(pos, packet)
       local server = calandria.server.find(pos)
       local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
-      success, err = pcall(function()
+      local success, err = pcall(function()
             local file = fs[packet.path]
             if(type(file) == "string") then
                diginet.reply(packet, { body = file, path = packet.path,
