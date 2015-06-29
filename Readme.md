@@ -7,6 +7,8 @@ This is a mod for games that run on the
 It is designed to encourage exploration of programming and other
 technical skills by adding programmable unixlike servers.
 
+Do not use this mod on public servers; it still has serious security issues.
+
 ## Installing
 
 Download

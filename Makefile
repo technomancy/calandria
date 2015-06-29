@@ -6,8 +6,10 @@ modpack:
 	git clone --depth=1 git@github.com:technomancy/calandria.git calandria-mp/mods/calandria
 	git clone --depth=1 git@github.com:technomancy/diginet.git calandria-mp/mods/diginet
 	git clone --depth=1 git@github.com:technomancy/orb.git calandria-mp/mods/orb
-	rm -r calandra-mp/mods/*/.git
-	mkdir calandria-mp/modpack.txt
+	rm -r calandria-mp/mods/calandria/.git
+	rm -r calandria-mp/mods/orb/.git
+	rm -r calandria-mp/mods/diginet/.git
+	touch calandria-mp/modpack.txt
 	tar czf calandria-mp.tar.gz calandria-mp
 
 upload: calandria-mp.tar.gz
