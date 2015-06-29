@@ -77,7 +77,7 @@ calandria.term = {
 
    new_line = function(pos, text)
       local max_chars = terminal_size[1] * 8
-      local max_lines = (terminal_size[2] * 4) - 1
+      local max_lines = (terminal_size[2] * 4) - 3
       local meta = minetest.get_meta(pos)
       local lines = meta:get_int("lines")
 
@@ -90,7 +90,8 @@ calandria.term = {
       local formspec = meta:get_string("formspec")
       local offset = lines / 4
       local line = text:sub(1, max_chars)
-      local new_formspec = formspec.."label[0,"..offset..";"..line.."]"
+      local new_formspec = formspec.."label[0,"..offset..";"..
+         minetest.formspec_escape(line) .."]"
       meta:set_string("formspec", new_formspec)
       local lines_split = split(text, "\n")
       lines = lines + #lines_split
