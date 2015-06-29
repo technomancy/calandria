@@ -25,6 +25,7 @@ local new_session_env = function(pos, server, player, user, address)
    env.PROMPT = ""
    env.IN = dir .. "/in"
    env.OUT = dir .. "/out"
+   env.PLAYER = player
 
    create_io_fifos(env, fs, pos, address)
 
@@ -113,7 +114,7 @@ calandria.server = {
                local tty_address = orb.utils.split(base, ":")[3]
                create_io_fifos(env, fs, pos_str, tty_address)
                -- can't restore all processes; at least we get a shell back
-               orb.process.spawn(fs, env, "smash")
+               orb.process.spawn(fs, env, "smash", sandbox(env.PLAYER))
             end
          end
       end
