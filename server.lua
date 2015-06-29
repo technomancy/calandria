@@ -43,9 +43,9 @@ end
 
 local chat_command = function(player, command_name, args)
    local cmddef = minetest.chatcommands[command_name]
+   assert(cmddef, "Command " .. command_name .. " not found.")
    local ok, missing_privs = minetest.check_player_privs(player, cmddef.privs)
-   assert(ok, "Could not run " .. command_name .. ", missing " ..
-             table.concat(missing_privs, ", "))
+   assert(ok, "Could not run " .. command_name .. ", missing " .. missing_privs)
    cmddef.func(owner, table.concat(args, " "))
 end
 
