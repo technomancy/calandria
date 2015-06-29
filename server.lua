@@ -26,6 +26,7 @@ local new_session_env = function(pos, server, player, user, address)
    env.IN = dir .. "/in"
    env.OUT = dir .. "/out"
    env.PLAYER = player
+   env.POS = pos
 
    create_io_fifos(env, fs, pos, address)
 
@@ -50,15 +51,16 @@ local chat_command = function(player, command_name, args)
    cmddef.func(owner, table.concat(args, " "))
 end
 
-local sandbox = function(player)
+local sandbox = function(env)
    return { flash = flash, diginet = diginet,
-     digiline = function(pos, channel, msg)
-        digiline:receptor_send(pos, digiline.rules.default,
+     digiline_send = function(channel, msg)
+        digiline:receptor_send(minetest.string_to_pos(env.POS),
+                               digiline.rules.default,
                                channel, msg)
      end,
      minetest = { string_to_pos = minetest.string_to_pos,
                   pos_to_string = minetest.pos_to_string,
-                  chat_command = orb.utils.partial(chat_command, player)
+                  chat_command = orb.utils.partial(chat_command, env.PLAYER)
      },
    }
 end
@@ -114,7 +116,7 @@ calandria.server = {
                local tty_address = orb.utils.split(base, ":")[3]
                create_io_fifos(env, fs, pos_str, tty_address)
                -- can't restore all processes; at least we get a shell back
-               orb.process.spawn(fs, env, "smash", sandbox(env.PLAYER))
+               orb.process.spawn(fs, env, "smash", sandbox(env))
             end
          end
       end
@@ -178,7 +180,7 @@ calandria.server = {
                                         minetest.pos_to_string(packet.source))
             local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
 
-            orb.process.spawn(fs, env, "smash", sandbox(packet.player))
+            orb.process.spawn(fs, env, "smash", sandbox(env))
 
             diginet.reply(packet, { method = "logged_in" })
          else

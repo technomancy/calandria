@@ -74,11 +74,11 @@ and its C port turned off.
 You can also send messages over the
 [Digilines](https://github.com/Jeija/minetest-mod-digilines) protocol:
 
-    > digiline (56,12,8) mychannel message
+    > digiline mychannel message
 
 Although digiline messages can be of any Lua type, the script only
 supports string messages. To send non-strings, you can write your own
-scripts that call the `digiline` function.
+scripts that call the `digiline` function with channel and message arguments.
 
 Terminals, servers, and editors communicate with each other using the
 [diginet](https://github.com/technomancy/diginet) protocol, which has

@@ -5,11 +5,13 @@ local f, env, args = ...
 if(args[1] == "--help") then
    print("Usage: diginet (12,31,2) method [field1 value1] ...")
 else
-   local destination = table.remove(args,1)
-   local packet = { destination = destination, method = table.remove(args,1) }
+   local destination = args[1]
+   local packet = { destination = destination,
+                    source = env.POS,
+                    method = args[2] }
 
    for i,v in ipairs(args) do
-      if(i % 2 == 0) then packet[v] = packet[v+1] end
+      if(i % 2 == 1) then packet[v] = args[i+1] end
    end
 
    diginet.send(packet)

@@ -3,8 +3,7 @@
 local f, env, args = ...
 
 if(args[1] == "--help") then
-   print("Usage: digiline (12,31,2) mychannel message")
+   print("Usage: digiline mychannel message")
 else
-   local pos = minetest.string_to_pos(args[1])
-   digiline(pos, digiline.rules.default, args[2], args[3])
+   digiline_send(unpack(args))
 end
