@@ -2,10 +2,11 @@
 
 This is a mod for games that run on the
 [Minetest engine](http://www.minetest.net) such as
-[Carbone](https://github.com/calinou/carbone/) and
-[Moontest](https://github.com/Amaz1/moontest).
-It is designed to encourage exploration of programming and other
-technical skills by adding programmable unixlike servers.
+[Carbone](https://github.com/calinou/carbone/),
+[Technic](https://github.com/minetest-technic/technic_game), and
+[Moontest](https://github.com/Amaz1/moontest).  It is designed to
+encourage exploration of programming and other technical skills by
+adding programmable unixlike servers.
 
 Do not use this mod on public servers; it still has serious security issues.
 

@@ -80,7 +80,7 @@ calandria.server = {
    make = function(player, _)
       local fs_raw = orb.fs.new_raw()
       local fs = orb.fs.proxy(fs_raw, "root", fs_raw)
-      orb.fs.seed(fs, {player})
+      orb.fs.seed(fs, {[player] = player})
       calandria.server.seed(fs)
       local proc = orb.fs.mkdir(fs, "/proc/root")
       proc._group = "root"
@@ -175,7 +175,7 @@ calandria.server = {
    on_login = function(pos, packet)
       local server = calandria.server.find(pos)
       if(server) then
-         if(orb.shell.login(server.fs_raw, packet.user, packet.password)) then
+         if(orb.shell.auth(server.fs_raw, packet.user, packet.password)) then
             local env = new_session_env(pos, server, packet.player, packet.user,
                                         minetest.pos_to_string(packet.source))
             local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
