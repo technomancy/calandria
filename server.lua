@@ -18,6 +18,7 @@ local create_io_fifos = function(env, fs, pos, address)
 end
 
 local new_session_env = function(pos, server, player, user, address)
+   -- TODO: get rows/cols from remote into env
    local env = orb.shell.new_env(user)
    local fs = orb.fs.proxy(server.fs_raw, user, server.fs_raw)
    local dir = diginet_dir(user, address)
@@ -191,41 +192,50 @@ calandria.server = {
       end
    end,
 
-   -- TODO: login?
    on_save_file = function(pos, packet)
       local server = calandria.server.find(pos)
       local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
-      success, err = pcall(function()
-            local dirname, base = orb.fs.dirname(packet.path)
-            local dir = fs[dirname]
-            dir[base] = packet.body
-      end)
-      if(success) then
-         diginet.reply(packet, {method = "modeline",
-                                modeline = "Saved "..packet.path})
+      if(orb.shell.auth(server.fs_raw, packet.user, packet.password)) then
+         success, err = pcall(function()
+               local dirname, base = orb.fs.dirname(packet.path)
+               local dir = fs[dirname]
+               dir[base] = packet.body
+         end)
+         if(success) then
+            diginet.reply(packet, {method = "modeline",
+                                   modeline = "Saved "..packet.path})
+         else
+            diginet.reply(packet, {method = "modeline", modeline = err})
+         end
       else
-         diginet.reply(packet, {method = "modeline", modeline = err})
+         diginet.reply(packet, { method = "modeline",
+                                 modeline = "Login failed." })
       end
    end,
 
    on_get_file = function(pos, packet)
       local server = calandria.server.find(pos)
       local fs = orb.fs.proxy(server.fs_raw, packet.user, server.fs_raw)
-      local success, err = pcall(function()
-            local file = fs[packet.path]
-            if(type(file) == "string") then
-               diginet.reply(packet, { body = file, path = packet.path,
-                                       method = "file", })
-            elseif(type(file) == "function") then
-               diginet.reply(packet, { body = file(), method = "file" })
-            elseif(not file) then
-               error("Not found: " .. packet.path)
-            else
-               error("Tried to get non-file: " .. type(file))
-            end
-      end)
-      if(not success) then
-         diginet.reply(packet, {method = "modeline", modeline = err})
+      if(orb.shell.auth(server.fs_raw, packet.user, packet.password)) then
+         local success, err = pcall(function()
+               local file = fs[packet.path]
+               if(type(file) == "string") then
+                  diginet.reply(packet, { body = file, path = packet.path,
+                                          method = "file", })
+               elseif(type(file) == "function") then
+                  diginet.reply(packet, { body = file(), method = "file" })
+               elseif(not file) then
+                  error("Not found: " .. packet.path)
+               else
+                  error("Tried to get non-file: " .. type(file))
+               end
+         end)
+         if(not success) then
+            diginet.reply(packet, {method = "modeline", modeline = err})
+         end
+      else
+         diginet.reply(packet, { method = "modeline",
+                                 modeline = "Login failed." })
       end
    end,
 
