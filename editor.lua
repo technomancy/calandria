@@ -95,6 +95,10 @@ local on_modeline = function(pos, packet)
    set_modeline(pos, packet.modeline)
 end
 
+local on_error = function(pos, packet)
+   set_modeline(pos, packet.err)
+end
+
 minetest.register_node("calandria:editor", {
                           description = "Text Editor",
                           paramtype = "light",
@@ -108,7 +112,10 @@ minetest.register_node("calandria:editor", {
                              "calandria_server_side.png",
                              "calandria_editor_front.png"
                           },
-                          diginet = { file = on_file, modeline = on_modeline},
+                          diginet = { file = on_file,
+                                      modeline = on_modeline,
+                                      error = on_error,
+                          },
                           groups = {dig_immediate = 2},
                           on_construct = on_construct,
                           on_receive_fields = on_receive_fields,

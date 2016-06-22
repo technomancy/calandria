@@ -30,7 +30,7 @@ into your `mods/` subdirectory and grab
 
 In order to start, you'll need to place a server block,
 then place a terminal near it. Right-click on the terminal and log in
-to the server using `/login (10,1,5) singleplayer` where the first
+to the server using `=login (10,1,5) singleplayer` where the first
 argument is the position of the server you've placed and the second
 argument is your current player name. (Note that servers can have
 users with any name, but when you place a server, the only user that
@@ -175,9 +175,7 @@ button, hitting enter, and hitting `shift-tab` to focus back on the
 input field.
 
 This mod is not suitable for public servers due to security concerns.
-Currently logins to server nodes
-[do not require a password](https://github.com/technomancy/orb/issues/7).
-Also note that all chat commands run on a server node are run as the
+Note that all chat commands run on a server node are run as the
 player who placed that node, which is a definite security concern in
 some contexts. Please note that it's easy to make
 [programs which will bring Minetest to a halt](https://github.com/technomancy/calandria/issues/6).
